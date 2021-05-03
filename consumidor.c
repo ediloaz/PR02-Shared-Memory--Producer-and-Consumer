@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -12,21 +13,26 @@ int pid;
 clock_t tiempoEspera;
 clock_t tiempoBloqueado;
 
+double ran_expo(double lambda)
+{
+    double u;
+    u = rand() / (RAND_MAX + 1.0);
+    double exp = -lambda * log(u);
+    return exp;
+}
+
 int main(int argc, char **argv)
 {
     pid = getpid();  
-    //Leer parametros
     char nombreBuffer[NAMEMAX] = "nombreBuffer";
     int media = 3;
     
     int paramIndex = 1;
-    //LEE PARÁMETROS DE RASTREADOR Y NOMBRE DE PROGRAMA HIJO
     while(paramIndex < argc)
     {
     	char* param = argv[paramIndex];
     	paramIndex++;
     	
-    	//Verifica si hay parámetros
     	if(param[0] == '-'){
     	    switch(param[1]){
     	    	case 'n':
@@ -44,7 +50,6 @@ int main(int argc, char **argv)
     	    	return 1;
     	    }
     	}   	  	
-    	
     }
     
     printf("Consumidor(%d) empieza.\n", pid);
@@ -58,14 +63,14 @@ int main(int argc, char **argv)
 
     while(1)
     {
+        double sleepTime = ran_expo(media);
         tiempoEspera = clock();
-        //Calculo de media
-        sleep(media);
+        sleep(sleepTime);
         tiempoEspera = clock() - tiempoEspera;
-        contadorTiempoEspera += ((double)tiempoEspera)/CLOCKS_PER_SEC + media;
+        contadorTiempoEspera += ((double)tiempoEspera)/CLOCKS_PER_SEC + sleepTime;
 
         tiempoBloqueado = clock();
-        //Pedir semaforo para indice de lectura
+        //Pedir semaforo para leer
         tiempoBloqueado = clock() - tiempoBloqueado;
         contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC;
 
@@ -77,8 +82,10 @@ int main(int argc, char **argv)
         int contadorConsumidoresVivos = 0;
 
         //Leer buffer en indice
-
         char *mensaje = "Llave: 5";
+        //Aumentar indice de lectura circular
+        //Borrar el mensaje
+        //Devolver semaforo de indice de lectura
 
         printf("Consumidor(%d) lee mensaje, con el indice de entrada: %d. Productores vivos: %d, consumidores vivos: %d.\n", pid, indice, contadorProductoresVivos, contadorConsumidoresVivos);
 
@@ -99,8 +106,5 @@ int main(int argc, char **argv)
             printf("Consumidor(%d) termina con %d mensajes, %f segundos esperando y %f segundos bloqueado.\n", pid, contadorMensajes, contadorTiempoEspera, contadorTiempoBloqueado);
             return 0;
         }
-
-        //Aumentar indice de lectura circular
-        //Devolver semaforo de indice de lectura
     }
 }

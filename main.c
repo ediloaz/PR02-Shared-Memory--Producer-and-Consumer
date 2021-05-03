@@ -9,14 +9,12 @@
 #include <semaphore.h>
 #include <time.h>
 
-
 //Flag del productores
 int flag_productor = 0;
 //***Hay que usar memoria compartida para la bandera (?)***
 
 int total_productores = 0;
 double tiempo = 0;
-
 
 // A normal C function that is executed as a thread
 // when its name is specified in pthread_create()
@@ -52,8 +50,6 @@ void productor(char nombreBuffer[],double lambda){
     //Acceder al Buffer con info: pid.tiempo,llave
     printf("El productor añade al buffer el siguiente mensaje:\n Identificador %d \n Tiempo: %f \n Llave %d.\n", pid, tiempo, llave);
     //Función imprimir mensaje desde buffer (?)
-
-
   }
 
   if (!flag_productor) {
@@ -62,12 +58,9 @@ void productor(char nombreBuffer[],double lambda){
     //***Faltan estadísticas***
     printf("Total de mensajes enviados: %d\n Total de tiempo acumulado:%f ",total_mensajes,tiempo );
   }
-
-
 }
 
 //Controlar que si no hay espacio en buffer productor en pausa con sems.
-
 
 int main(int argc, char **argv)
 {
