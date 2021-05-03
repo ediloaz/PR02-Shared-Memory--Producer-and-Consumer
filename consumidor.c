@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include <string.h>
+#define NAMEMAX 100
 
 int contadorMensajes = 0;
 double contadorTiempoEspera = 0;
@@ -14,8 +16,36 @@ int main(int argc, char **argv)
 {
     pid = getpid();  
     //Leer parametros
-    char nombreBuffer[] = "nombreBuffer";
+    char nombreBuffer[NAMEMAX] = "nombreBuffer";
     int media = 3;
+    
+    int paramIndex = 1;
+    //LEE PARÁMETROS DE RASTREADOR Y NOMBRE DE PROGRAMA HIJO
+    while(paramIndex < argc)
+    {
+    	char* param = argv[paramIndex];
+    	paramIndex++;
+    	
+    	//Verifica si hay parámetros
+    	if(param[0] == '-'){
+    	    switch(param[1]){
+    	    	case 'n':
+    	    	strcpy(nombreBuffer, argv[paramIndex]);
+    	    	printf("Nombre: %s\n", nombreBuffer);
+    	    	paramIndex++;
+    	    	break;
+    	    case 'm':
+    	    	media = atoi(argv[paramIndex]);
+    	    	printf("Media: %d\n", media);
+    	    	paramIndex++;
+    	    	break;
+    	    default:
+    	    	printf("Error: Parámetro no reconocido\n");
+    	    	return 1;
+    	    }
+    	}   	  	
+    	
+    }
     
     printf("Consumidor(%d) empieza.\n", pid);
 
