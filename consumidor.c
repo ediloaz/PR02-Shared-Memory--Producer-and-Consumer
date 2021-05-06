@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 #include <time.h>
 #include <unistd.h>
 #include <string.h>
@@ -28,6 +29,9 @@ int main(int argc, char **argv)
     int media = 3;
     
     int paramIndex = 1;
+
+    int pidCreator;
+
     while(paramIndex < argc)
     {
     	char* param = argv[paramIndex];
@@ -45,12 +49,24 @@ int main(int argc, char **argv)
     	    	printf("Media: %d\n", media);
     	    	paramIndex++;
     	    	break;
+            case 'p':
+    	    	pidCreator = atoi(argv[paramIndex]);
+    	    	printf("pid Creator: %d\n", pidCreator);
+    	    	paramIndex++;
+    	    	break;
     	    default:
     	    	printf("Error: Parámetro no reconocido\n");
     	    	return 1;
     	    }
     	}   	  	
     }
+
+    int result = kill(pid, SIGUSR1);
+    if(result == 0){
+   	    printf("Enviado correctamente\n");
+    }else{
+   	    printf("Error al enviar\n");
+    }   
     
     printf("Consumidor(%d) empieza.\n", pid);
 
