@@ -5,7 +5,10 @@
 #include <time.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/types.h>
 #define NAMEMAX 100
+
+//gcc consumidor.c -o consumidor -lm
 
 int contadorMensajes = 0;
 double contadorTiempoEspera = 0;
@@ -30,7 +33,7 @@ int main(int argc, char **argv)
     
     int paramIndex = 1;
 
-    int pidCreator;
+    pid_t pidCreator;
 
     while(paramIndex < argc)
     {
@@ -61,7 +64,7 @@ int main(int argc, char **argv)
     	}   	  	
     }
 
-    int result = kill(pid, SIGUSR1);
+    int result = kill(pidCreator, SIGUSR1);
     if(result == 0){
    	    printf("Enviado correctamente\n");
     }else{
