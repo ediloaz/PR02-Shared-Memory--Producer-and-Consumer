@@ -14,7 +14,25 @@ GtkWidget *window;
 GtkWidget *g_lbl_nombreBuffer;
 GtkWidget *g_lbl_cantidadProductoresActivos;
 GtkWidget *g_lbl_cantidadConsumidoresActivos;
-GtkWidget *g_txt_bitacora;
+GtkWidget *g_lbl_bitacora;
+
+void TestearBitacora(){
+    // printf("Vamos a testear \n");
+    // const gchar * textoDeBitacora = gtk_label_get_text(GTK_LABEL(g_lbl_bitacora));
+    // const gchar * nuevoMensaje = "Este es nuevo mensaje :)";
+
+    // const gchar * nuevoTexto;
+    // sprintf(nuevoTexto, "%c", nuevoMensaje);
+
+    // printf(nuevoTexto);
+    // gtk_label_set_text(GTK_LABEL(g_lbl_bitacora), nuevoTexto);
+    gtk_label_set_text(GTK_LABEL(g_lbl_bitacora), "Hola, este es el inicio \nMensaje 1, \nMensaje 2, \nMensaje 3,  \nMensaje 1, \nMensaje 2, \nMensaje 3,  \nMensaje 1, \nMensaje 2, \nMensaje 3,  \nMensaje 1, \nMensaje 2, \nMensaje 3,  \nMensaje 1, \nMensaje 2, \nMensaje 3,  \nMensaje 1, \nMensaje 2, \nMensaje 3,  \nMensaje 1, \nMensaje 2, \nMensaje 3,  \nMensaje 1, \nMensaje 2, \nMensaje 3,  \nMensaje 1, \nMensaje 2, \nMensaje 3,  \nMensaje 1, \nMensaje 2, \nMensaje 3, ");
+    
+}
+
+void IniciarBitacora(){
+    gtk_label_set_text(GTK_LABEL(g_lbl_bitacora), "Hola, este es el inicio");
+}
 
 // Función auxiliar
 void _RenderizarCantidadProductoresOConsumidoresActivos(int cantidad, bool esProductor){
@@ -56,12 +74,13 @@ void IniciarInterfaz(int argc, char *argv[])
     g_lbl_nombreBuffer = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_nombreBuffer"));
     g_lbl_cantidadProductoresActivos = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_cantidadProductoresActivos"));
     g_lbl_cantidadConsumidoresActivos = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_cantidadConsumidoresActivos"));
-    g_txt_bitacora = GTK_WIDGET(gtk_builder_get_object(builder, "txt_bitacora"));
+    g_lbl_bitacora = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_bitacora"));
     
     
     // Ejemplo de Renderizar/Pintar en interfaz
     RenderizarCantidadProductoresActivos(9);
     RenderizarCantidadConsumidoresActivos(180);
+    IniciarBitacora();
 
     g_object_unref(builder);
     gtk_widget_show(window);
