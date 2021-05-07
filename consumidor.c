@@ -1,3 +1,8 @@
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,6 +11,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
+#include <semaphore.h>
+
 #define NAMEMAX 100
 
 //gcc consumidor.c -o consumidor -lm
@@ -32,6 +39,7 @@ int main(int argc, char **argv)
     int media = 3;
     
     int paramIndex = 1;
+    int bufferSize = 10;
 
     pid_t pidCreator;
 
@@ -63,22 +71,27 @@ int main(int argc, char **argv)
     	    }
     	}   	  	
     }
-
-    int result = kill(pidCreator, SIGUSR1);
-    if(result == 0){
-   	    printf("Enviado correctamente\n");
-    }else{
-   	    printf("Error al enviar\n");
-    }   
-    
     printf("Consumidor(%d) empieza.\n", pid);
 
+    void* ptrConsumidores = mmap(0, 4096, PROT_READ, MAP_SHARED, shm_open("CONSUMIDORES", O_RDWR, 0666), 0);
+    void* ptrIndiceLectura = mmap(0, 4096, PROT_READ, MAP_SHARED, shm_open("INDICELECTURA", O_RDWR, 0666), 0);
+    void* ptrProductores = mmap(0, 4096, PROT_READ, MAP_SHARED, shm_open("PRODUCTORES", O_RDWR, 0666), 0);
+    void* ptrBuffer = mmap(0, 4096, PROT_READ, MAP_SHARED, shm_open("BUFFER", O_RDWR, 0666), 0);
+
     tiempoBloqueado = clock();
-    //Pedir semaforo para contador de consumidores vivos
+    sem_t *semconsumidores = sem_open("SEMCONSUMIDORES", O_CREAT, 0600, 0);
     tiempoBloqueado = clock() - tiempoBloqueado;
-    contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC;
-    //Aumentar el contador de consumidores vivos
-    //Devolver el semaforo de contador de consumidores vivos
+    contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC; 
+
+    if (semconsumidores == SEM_FAILED) printf("SEMCONSUMIDORES Failed\n");     
+
+    printf("%d", (char*)ptrConsumidores);
+    int consumidores = atoi((char*)ptrConsumidores) + 1;
+    memcpy(ptrConsumidores, consumidores, sizeof(consumidores));
+    printf("%d", (char*)ptrConsumidores);
+    
+    sem_post(semconsumidores);
+    kill(pidCreator, SIGUSR1);
 
     while(1)
     {
@@ -89,22 +102,42 @@ int main(int argc, char **argv)
         contadorTiempoEspera += ((double)tiempoEspera)/CLOCKS_PER_SEC + sleepTime;
 
         tiempoBloqueado = clock();
-        //Pedir semaforo para leer
+        sem_t *semvacio = sem_open("SEMVACIO", O_CREAT, 0600, 0);
         tiempoBloqueado = clock() - tiempoBloqueado;
-        contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC;
+        contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC; 
 
-        //Leer el indice de lectura
-        int indice = contadorMensajes;
+        tiempoBloqueado = clock();
+        sem_t *sembuffer = sem_open("SEMBUFFER", O_CREAT, 0600, 0);
+        tiempoBloqueado = clock() - tiempoBloqueado;
+        contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC; 
+
+        //Leer el índice de lectura
+        printf("%d", (char*)ptrIndiceLectura);
+        int indice = atoi((char*)ptrIndiceLectura);
+        
+        printf("%d", (char*)ptrIndiceLectura);
+
         //Leer el contador de productores vivos
-        int contadorProductoresVivos = 0;
-        //Leer el contador de consumidores vivos
-        int contadorConsumidoresVivos = 0;
+        int contadorProductoresVivos = atoi((char*)ptrProductores);
 
-        //Leer buffer en indice
-        char *mensaje = "Llave: 5";
+        //Leer el contador de consumidores vivos
+        int contadorConsumidoresVivos = atoi((char*)ptrConsumidores);
+
+        //Leer buffer en indice CUIDADO
+        char *mensaje = &ptrBuffer[indice];
+
         //Aumentar indice de lectura circular
-        //Borrar el mensaje
+        indice = (indice + 1) % bufferSize;
+        memcpy(ptrIndiceLectura, indice, sizeof(indice));
+
+        //TODO: Borrar el mensaje
+        memcpy(&ptrBuffer[indice], "", sizeof(""));
+
         //Devolver semaforo de indice de lectura
+        sem_post(sembuffer);
+        sem_post(semvacio);
+
+        kill(pidCreator, SIGALRM);
 
         printf("Consumidor(%d) lee mensaje, con el indice de entrada: %d. Productores vivos: %d, consumidores vivos: %d.\n", pid, indice, contadorProductoresVivos, contadorConsumidoresVivos);
 
@@ -116,11 +149,14 @@ int main(int argc, char **argv)
         if (llave == 5 || pid % 5 == llave)
         {
             tiempoBloqueado = clock();
-            //Pedir semaforo para contador de consumidores vivos
+            sem_wait(semconsumidores);
             tiempoBloqueado = clock() - tiempoBloqueado;
             contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC;
             //Decrementar el contador de consumidores vivos
+            int consumidores = atoi((char*)ptrConsumidores) - 1;
+            memcpy(ptrConsumidores, consumidores, sizeof(consumidores));
             //Devolver el semaforo de contador de consumidores vivos
+            sem_post(semconsumidores);
 
             printf("Consumidor(%d) termina con %d mensajes, %f segundos esperando y %f segundos bloqueado.\n", pid, contadorMensajes, contadorTiempoEspera, contadorTiempoBloqueado);
             return 0;
