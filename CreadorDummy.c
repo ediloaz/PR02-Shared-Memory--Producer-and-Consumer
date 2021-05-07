@@ -15,9 +15,9 @@
 #define LOGMAX 100 
 #define ENTRYMAX 64
 
+
 //COMPILAR: gcc CreadorDummy.c -o creador -lpthread -lrt
-struct buffer_t{
-    char** BUFFER;		//Buffer de mensajes
+struct buffer_t{    
     int index_lectura;		//Índice de lectura
     int index_escritura;	//Índice de escritura
     int max_buffer;		//Tamaño máximo de capacidad del buffer
@@ -34,7 +34,19 @@ struct buffer_t{
     int CONSUMIDORES;		//total de consumidores vivos
     
     char mensaje_log[LOGMAX];
+    char** BUFFER;		//Buffer de mensajes
 } ;
+
+struct buffer_t* bufptr;
+
+void sig_handler(int signum){
+
+   if(signum == SIGUSR1){
+       printf("Recibí la señal de creacion de consumidor. Ahora hay: %d vivos\n",bufptr->CONSUMIDORES );
+       
+   }
+
+}
 
 int main(int argc, char** argv){
        
@@ -70,14 +82,10 @@ int main(int argc, char** argv){
     	}   	  	
     }
     
-    struct buffer_t buf;
-    
-    
-    buf.BUFFER = (char**) malloc( buff_size * ENTRYMAX);
-       
+    signal(SIGUSR1, sig_handler);
     
     //DECLARA MEMORIA COMPARTIDA    
-    int len = sizeof(buf);
+    int len = sizeof(struct buffer_t);
     int fd = shm_open(nombreBuffer, O_RDWR | O_CREAT, 0644);
     if(fd < 0){
         printf("Error de shm_open\n");        
@@ -88,24 +96,24 @@ int main(int argc, char** argv){
         return 1;
     }
     printf("Largo: %d\n", len);
-    struct buffer_t* bufptr = mmap(NULL, len, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+    bufptr = mmap(NULL, sizeof(struct buffer_t), PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
     
     if(bufptr == MAP_FAILED){
     	printf("Error al crear la memoria compartida (mmap)\n");
         return 1;
     }
-    free(buf.BUFFER);
+
     
     //INICIALIZA VALROES DE STRUCT
     bufptr->BUFFER = (char**) malloc( buff_size * ENTRYMAX);
-    sem_init(&bufptr->SEM_CONSUMIDORES, 0, 0);
-    sem_init(&bufptr->SEM_PRODUCTORES, 0, 0);
+    sem_init(&bufptr->SEM_CONSUMIDORES, 1, 0);
+    sem_init(&bufptr->SEM_PRODUCTORES, 1, 0);
     
-    sem_init(&bufptr->SEM_LLENO, 0, 0);
-    sem_init(&bufptr->SEM_VACIO, 0, buff_size);
+    sem_init(&bufptr->SEM_LLENO, 1, 0);
+    sem_init(&bufptr->SEM_VACIO, 1, buff_size);
     
-    sem_init(&bufptr->SEM_CBUFFER, 0, 1);
-    sem_init(&bufptr->SEM_PBUFFER, 0, 1);
+    sem_init(&bufptr->SEM_CBUFFER, 1, 1);
+    sem_init(&bufptr->SEM_PBUFFER, 1, 1);
     
     bufptr->index_lectura = bufptr->index_escritura = 0;
     bufptr->PRODUCTORES = bufptr->CONSUMIDORES = 0;
