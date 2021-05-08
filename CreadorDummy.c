@@ -14,7 +14,7 @@
 #define NAMEMAX 100 		//tamaño máximo del numbre del buffer
 #define LOGMAX 100 
 #define ENTRYMAX 64
-
+#define AUX "\auxiliar"
 
 //COMPILAR: gcc CreadorDummy.c -o creador -lpthread -lrt
 struct auxiliar_t{    
@@ -37,12 +37,12 @@ struct auxiliar_t{
     char **BUFFER;
 } ;
 
-struct auxiliar_t* bufptr;
+struct auxiliar_t* auxptr;
 
 void sig_handler(int signum){
 
    if(signum == SIGUSR1){
-       printf("Recibí la señal de creacion de consumidor. Ahora hay: %d vivos\n",bufptr->CONSUMIDORES );
+       printf("Recibí la señal de creacion de consumidor. Ahora hay: %d vivos\n",auxptr->CONSUMIDORES );
        
    }
 
@@ -84,28 +84,33 @@ int main(int argc, char** argv){
     
     signal(SIGUSR1, sig_handler);
     
-    typedef char buffer_t[buff_size][ENTRYMAX]; 
-    buffer_t* buffer;
+    
+    struct buffer_t{
+         char b[buff_size][ENTRYMAX]; 
+    };
+    
+    struct buffer_t buffer;
+    
+    char (*bufptr)[ENTRYMAX];
     
     
     //DECLARA MEMORIA COMPARTIDA    
-    int len = 4096;
-    int fd = shm_open(nombreBuffer, O_RDWR | O_CREAT, 0666);
-    if(fd < 0){
+    int len = sizeof(struct auxiliar_t);
+    int fd = shm_open(AUX, O_RDWR | O_CREAT, 0666);
+    int fd2 = shm_open(nombreBuffer, O_RDWR | O_CREAT, 0666);
+    if(fd < 0 || fd2 < 0){
         printf("Error de shm_open\n");        
         return 1;
     }
-    if(ftruncate(fd, len) == -1) {
+    if(ftruncate(fd, len) == -1 || ftruncate(fd2, ENTRYMAX*buff_size) == -1) {
     	printf("Error de ftruncate\n");        
         return 1;
     }
-    printf("Largo: %ld\n", sizeof(struct auxiliar_t));
-    bufptr = mmap(0,len, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-    buffer = (buffer_t*)mmap(0,buff_size*ENTRYMAX*sizeof(char), PROT_READ|PROT_WRITE, MAP_SHARED, fd,330);
+    printf("Largo: %d\n", len);
+    auxptr = mmap(0,len, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+    bufptr = mmap(0,ENTRYMAX*buff_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd2,0);
     
-    
-    
-    if(bufptr == MAP_FAILED){
+    if(auxptr == MAP_FAILED){
     	printf("Error al crear la memoria compartida (mmap)\n");
         return 1;
     }
@@ -114,23 +119,25 @@ int main(int argc, char** argv){
     //INICIALIZA VALROES DE STRUCT
     
     
-    sem_init(&bufptr->SEM_CONSUMIDORES, 1, 1);
-    sem_init(&bufptr->SEM_PRODUCTORES, 1, 1);
+    sem_init(&auxptr->SEM_CONSUMIDORES, 1, 1);
+    sem_init(&auxptr->SEM_PRODUCTORES, 1, 1);
     
-    sem_init(&bufptr->SEM_LLENO, 1, 0);
-    sem_init(&bufptr->SEM_VACIO, 1, buff_size);
+    sem_init(&auxptr->SEM_LLENO, 1, 0);
+    sem_init(&auxptr->SEM_VACIO, 1, buff_size);
     
-    sem_init(&bufptr->SEM_CBUFFER, 1, 1);
-    sem_init(&bufptr->SEM_PBUFFER, 1, 1);
+    sem_init(&auxptr->SEM_CBUFFER, 1, 1);
+    sem_init(&auxptr->SEM_PBUFFER, 1, 1);
     
-    bufptr->index_lectura = bufptr->index_escritura = 0;
-    bufptr->PRODUCTORES = bufptr->CONSUMIDORES = 0;
-    bufptr->max_buffer = buff_size;
+    auxptr->index_lectura = auxptr->index_escritura = 0;
+    auxptr->PRODUCTORES = auxptr->CONSUMIDORES = 0;
+    auxptr->max_buffer = buff_size;
     
-    strcpy(buffer[0], "Hola");
-    buffer[0] = "Hola\0";
-    
+    //printf("Largo: %ld\n", sizeof(bufptr));
+    int i = sysconf(_SC_PAGE_SIZE);
+    printf("Page size: %d\n" ,i);
+    strcpy(bufptr[0], "Hola");
     printf("Memoria compartida creada correctamente\n");
+    printf("Mensaje: %s\n",bufptr[0]);
     //Ciclo infinito para mantenerlo vivo
     for(int i=1;;i++){
       sleep(1);
@@ -138,5 +145,6 @@ int main(int argc, char** argv){
     
     return 0;
 }
+
 
 

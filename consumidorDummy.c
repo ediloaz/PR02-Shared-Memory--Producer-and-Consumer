@@ -14,27 +14,32 @@
 #define NAMEMAX 100 		//tamaño máximo del numbre del buffer
 #define LOGMAX 100
 #define ENTRYMAX 64
+#define AUX "\auxiliar"
 //gcc consumidorDummy.c -o consumidor -lm -lpthread -lrt
 
-struct buffer_t{
+struct auxiliar_t{    
     int index_lectura;		//Índice de lectura
     int index_escritura;	//Índice de escritura
     int max_buffer;		//Tamaño máximo de capacidad del buffer
-
+    
     sem_t SEM_CONSUMIDORES; 	//semáforo de total de consumidores vivos
     sem_t SEM_PRODUCTORES; 	//semáforo de total de productores vivos
-
+    
     sem_t SEM_LLENO;	     	//semáforo de buffer lleno
     sem_t SEM_VACIO;		//semáforo de buffer vacío
     sem_t SEM_CBUFFER;		//semáforo de acceso a buffer de consumidores
     sem_t SEM_PBUFFER;		//Semáforo de acceso a buffer de productores
-
+    
     int PRODUCTORES;		//total de productores vivos
     int CONSUMIDORES;		//total de consumidores vivos
-
+    
     char mensaje_log[LOGMAX];
-    char ** BUFFER;
+    char **BUFFER;
 } ;
+
+struct auxiliar_t* auxptr;
+
+char (*bufptr)[ENTRYMAX];
 
 int contadorMensajes = 0;
 double contadorTiempoEspera = 0;
@@ -94,28 +99,35 @@ int main(int argc, char **argv)
 
 
     //=======Consigue direccion de memoria compartida=======
-    int fd = shm_open(nombreBuffer, O_RDWR, 0600);
+    int len = sizeof(struct auxiliar_t);
+    int fd = shm_open(AUX, O_RDWR, 0600);
     if(fd == -1){
         printf("Fallo de shm_open\n");
         return 1;
     }
-    if(ftruncate(fd, 4096) == -1) {
+    if(ftruncate(fd, len) == -1) {
     	printf("Error de ftruncate\n");        
         return 1;
     }
-    struct buffer_t* ptrBuffer = (struct buffer_t* )mmap(0, 4096, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-    
-    if(ptrBuffer == MAP_FAILED){
+    struct auxiliar_t* auxptr = mmap(0, len, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+    if(auxptr == MAP_FAILED){
     	printf("Error de mmap\n");
     	return 1;
     }
-    int buf_size = ptrBuffer->max_buffer;
-    ptrBuffer->BUFFER = mmap(0,buf_size*ENTRYMAX, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-   
-
+    bufferSize  = auxptr->max_buffer;
+    bufptr = mmap(0,ENTRYMAX*bufferSize, PROT_READ|PROT_WRITE, MAP_SHARED, fd,len+5);
+    printf("Tamaño de buffer: %d\n", auxptr->max_buffer);
     
-
-    printf("Tamaño de buffer: %d\n", ptrBuffer->max_buffer);
+    int fd2 = shm_open(nombreBuffer, O_RDWR, 0600);
+    if(fd2 == -1){
+    	printf("Fallo de shm_open\n");
+    	return 1;
+    }
+    if(ftruncate(fd2, ENTRYMAX * bufferSize) == -1) {
+    	printf("Error de ftruncate\n");        
+        return 1;
+    }
+    bufptr = mmap(0, ENTRYMAX * bufferSize, PROT_READ|PROT_WRITE, MAP_SHARED, fd2, 0);
 
     //=======Tiempo bloqueado=======
     tiempoBloqueado = clock();
@@ -124,18 +136,18 @@ int main(int argc, char **argv)
     printf("Tiempo listo\n");
 
     /*=======ACTUALIZAR TOTAL CONSUMIDORES=======*/    
-    sem_wait(&ptrBuffer->SEM_CONSUMIDORES);//Pide semáforo de CONSUMIDORES
+    sem_wait(&auxptr->SEM_CONSUMIDORES);//Pide semáforo de CONSUMIDORES
 
-    ptrBuffer->CONSUMIDORES++;
+    auxptr->CONSUMIDORES++;
     
-    sem_post(&ptrBuffer->SEM_CONSUMIDORES);
+    sem_post(&auxptr->SEM_CONSUMIDORES);
     
     kill(pidCreator, SIGUSR1);//Envía señal a creador de actualización del valor
     
     /*=======ESCRIBIR EN EL BUFFER=======*/ 
-    printf("Mensaje: %s\n", ptrBuffer->BUFFER[0]);
-    strcpy(ptrBuffer->BUFFER[0], "Hola mundo");
-    printf("Mensaje: %s\n", ptrBuffer->BUFFER[0]);
+    printf("Mensaje: %s\n", bufptr[0]);
+    strcpy(bufptr[0], "Hola mundo");
+    printf("Mensaje: %s\n", bufptr[0]);
 
 
     return 0;
