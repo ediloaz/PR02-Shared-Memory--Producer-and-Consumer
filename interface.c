@@ -1,6 +1,6 @@
 #include <gtk/gtk.h>
-#include<stdbool.h>  
-
+#include <stdbool.h>  
+#include <glib/gtypes.h>
 
 /* COMANDO PARA CORRER:
 gcc -o gladewin interface.c -lm -Wall `pkg-config --cflags --libs gtk+-3.0` -export-dynamic ; ./gladewin
@@ -15,23 +15,30 @@ GtkWidget *g_lbl_nombreBuffer;
 GtkWidget *g_lbl_cantidadProductoresActivos;
 GtkWidget *g_lbl_cantidadConsumidoresActivos;
 GtkWidget *g_lbl_bitacora;
+GtkWidget *g_txt_bitacora;
+GtkTextBuffer *g_buffer_bitacora;
 
-void TestearBitacora(){
-    // printf("Vamos a testear \n");
-    // const gchar * textoDeBitacora = gtk_label_get_text(GTK_LABEL(g_lbl_bitacora));
-    // const gchar * nuevoMensaje = "Este es nuevo mensaje :)";
+// Constantes para usar en bitácora
+const int bitacora_lineasInicialesEscritas = 0;
+const int bitacora_lineasUsadasPorEscritura = 3;
 
-    // const gchar * nuevoTexto;
-    // sprintf(nuevoTexto, "%c", nuevoMensaje);
-
-    // printf(nuevoTexto);
-    // gtk_label_set_text(GTK_LABEL(g_lbl_bitacora), nuevoTexto);
-    gtk_label_set_text(GTK_LABEL(g_lbl_bitacora), "Hola, este es el inicio \nMensaje 1, \nMensaje 2, \nMensaje 3,  \nMensaje 1, \nMensaje 2, \nMensaje 3,  \nMensaje 1, \nMensaje 2, \nMensaje 3,  \nMensaje 1, \nMensaje 2, \nMensaje 3,  \nMensaje 1, \nMensaje 2, \nMensaje 3,  \nMensaje 1, \nMensaje 2, \nMensaje 3,  \nMensaje 1, \nMensaje 2, \nMensaje 3,  \nMensaje 1, \nMensaje 2, \nMensaje 3,  \nMensaje 1, \nMensaje 2, \nMensaje 3,  \nMensaje 1, \nMensaje 2, \nMensaje 3, ");
-    
+void EscribirEnBitacora(char *texto){
+    gint lineaSiguiente = gtk_text_buffer_get_line_count (g_buffer_bitacora)/bitacora_lineasUsadasPorEscritura - bitacora_lineasInicialesEscritas;
+    char strLineaSiguiente[6];
+    sprintf(strLineaSiguiente, "%d", lineaSiguiente);
+    gchar *textoParaEscribir = g_strjoin("", " > [", strLineaSiguiente, "]:\n   ", texto, "\n\n",  NULL);
+    gtk_text_buffer_insert_at_cursor(g_buffer_bitacora, textoParaEscribir, -1);
 }
 
+void TestearEscribirEnBitacora(){
+    EscribirEnBitacora("Ésto es un ejemplo del mensaje a imprimir en la bitácora");
+}
+
+
+
 void IniciarBitacora(){
-    gtk_label_set_text(GTK_LABEL(g_lbl_bitacora), "Hola, este es el inicio");
+    gchar *text = "Bitácora :)  \n\n";
+    gtk_text_buffer_set_text (g_buffer_bitacora, text, -1);
 }
 
 // Función auxiliar
@@ -80,9 +87,9 @@ void IniciarInterfaz(int argc, char *argv[])
     g_lbl_nombreBuffer = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_nombreBuffer"));
     g_lbl_cantidadProductoresActivos = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_cantidadProductoresActivos"));
     g_lbl_cantidadConsumidoresActivos = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_cantidadConsumidoresActivos"));
-    g_lbl_bitacora = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_bitacora"));
-    
-    
+    g_txt_bitacora = GTK_WIDGET(gtk_builder_get_object(builder, "txt_bitacora"));   // Way with text
+    g_buffer_bitacora = gtk_text_view_get_buffer( GTK_TEXT_VIEW(g_txt_bitacora) );             // Way with text
+
     // Ejemplo de Renderizar/Pintar en interfaz
     DefinirNombreBuffer();
     RenderizarCantidadProductoresActivos(9);
