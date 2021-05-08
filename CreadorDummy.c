@@ -17,7 +17,7 @@
 
 
 //COMPILAR: gcc CreadorDummy.c -o creador -lpthread -lrt
-struct buffer_t{    
+struct auxiliar_t{    
     int index_lectura;		//Índice de lectura
     int index_escritura;	//Índice de escritura
     int max_buffer;		//Tamaño máximo de capacidad del buffer
@@ -34,10 +34,10 @@ struct buffer_t{
     int CONSUMIDORES;		//total de consumidores vivos
     
     char mensaje_log[LOGMAX];
-    char** BUFFER;		//Buffer de mensajes
+    char **BUFFER;
 } ;
 
-struct buffer_t* bufptr;
+struct auxiliar_t* bufptr;
 
 void sig_handler(int signum){
 
@@ -84,6 +84,10 @@ int main(int argc, char** argv){
     
     signal(SIGUSR1, sig_handler);
     
+    typedef char buffer_t[buff_size][ENTRYMAX]; 
+    buffer_t* buffer;
+    
+    
     //DECLARA MEMORIA COMPARTIDA    
     int len = 4096;
     int fd = shm_open(nombreBuffer, O_RDWR | O_CREAT, 0666);
@@ -95,8 +99,11 @@ int main(int argc, char** argv){
     	printf("Error de ftruncate\n");        
         return 1;
     }
-    printf("Largo: %d\n", len);
+    printf("Largo: %ld\n", sizeof(struct auxiliar_t));
     bufptr = mmap(0,len, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+    buffer = (buffer_t*)mmap(0,buff_size*ENTRYMAX*sizeof(char), PROT_READ|PROT_WRITE, MAP_SHARED, fd,330);
+    
+    
     
     if(bufptr == MAP_FAILED){
     	printf("Error al crear la memoria compartida (mmap)\n");
@@ -105,9 +112,10 @@ int main(int argc, char** argv){
 
     
     //INICIALIZA VALROES DE STRUCT
-    bufptr->BUFFER = (char**) malloc( buff_size * ENTRYMAX);
-    sem_init(&bufptr->SEM_CONSUMIDORES, 1, 0);
-    sem_init(&bufptr->SEM_PRODUCTORES, 1, 0);
+    
+    
+    sem_init(&bufptr->SEM_CONSUMIDORES, 1, 1);
+    sem_init(&bufptr->SEM_PRODUCTORES, 1, 1);
     
     sem_init(&bufptr->SEM_LLENO, 1, 0);
     sem_init(&bufptr->SEM_VACIO, 1, buff_size);
@@ -118,6 +126,9 @@ int main(int argc, char** argv){
     bufptr->index_lectura = bufptr->index_escritura = 0;
     bufptr->PRODUCTORES = bufptr->CONSUMIDORES = 0;
     bufptr->max_buffer = buff_size;
+    
+    strcpy(buffer[0], "Hola");
+    buffer[0] = "Hola\0";
     
     printf("Memoria compartida creada correctamente\n");
     //Ciclo infinito para mantenerlo vivo
