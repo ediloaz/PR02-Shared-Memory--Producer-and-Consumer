@@ -54,7 +54,7 @@ double ran_expo(double lambda)
 int main(int argc, char **argv)
 {
     pid = getpid();
-    char nombreBuffer[NAMEMAX] = "nombreBuffer";
+    char nombreBuffer[NAMEMAX] = "/nombreBuffer";
     int media = 3;
 
     int paramIndex = 1;
@@ -94,7 +94,16 @@ int main(int argc, char **argv)
 
 
     //=======Consigue direccion de memoria compartida=======
-    struct buffer_t* ptrBuffer = (struct buffer_t* )mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_SHARED, shm_open(nombreBuffer, O_RDWR, 0666), 0);
+    int fd = shm_open(nombreBuffer, O_RDWR, 0600);
+    if(fd == -1){
+        printf("Fallo de shm_open\n");
+        return 1;
+    }
+    if(ftruncate(fd, 4096) == -1) {
+    	printf("Error de ftruncate\n");        
+        return 1;
+    }
+    struct buffer_t* ptrBuffer = (struct buffer_t* )mmap(0, 4096, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
     if(ptrBuffer == MAP_FAILED){
     	printf("Error de mmap\n");
     	return 1;
@@ -106,19 +115,17 @@ int main(int argc, char **argv)
     tiempoBloqueado = clock();
     tiempoBloqueado = clock() - tiempoBloqueado;
     contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC;
-
+    printf("Tiempo listo\n");
 
     /*=======ACTUALIZAR TOTAL CONSUMIDORES=======*/
     //Pide semáforo de CONSUMIDORES
-//    sem_wait(&ptrBuffer->SEM_CONSUMIDORES);
+    sem_wait(&ptrBuffer->SEM_CONSUMIDORES);
 
-    //printf("Total consumidores vivos: %d\n", ptrBuffer->CONSUMIDORES);
-    //printf("Antes memcpy\n");
-    memcpy(&ptrBuffer->CONSUMIDORES, &(ptrBuffer->CONSUMIDORES) + 1, sizeof(ptrBuffer->CONSUMIDORES));
-    //printf("Después memcpy\n");
+    printf("Total consumidores vivos: %d\n", ptrBuffer->CONSUMIDORES);
+    ptrBuffer->CONSUMIDORES++;
     printf("Total consumidores vivos: %d\n", ptrBuffer->CONSUMIDORES);
     //Retorna semáforo
-    //sem_post(&ptrBuffer->SEM_CONSUMIDORES);
+    sem_post(&ptrBuffer->SEM_CONSUMIDORES);
     //Envía señal a creador de actualización del valor
     kill(pidCreator, SIGUSR1);
 

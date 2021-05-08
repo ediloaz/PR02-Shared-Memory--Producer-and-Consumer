@@ -54,7 +54,7 @@ int main(int argc, char** argv){
     printf("Mi PID es: %d\n", pid);
     
     //LECTURA DE PARÁMETROS  
-    char nombreBuffer[NAMEMAX] = "nombreBuffer";
+    char nombreBuffer[NAMEMAX] = "/nombreBuffer";
     int buff_size = 10;    
     int paramIndex = 1;
 
@@ -86,7 +86,7 @@ int main(int argc, char** argv){
     
     //DECLARA MEMORIA COMPARTIDA    
     int len = 4096;
-    int fd = shm_open(nombreBuffer, O_RDWR | O_CREAT, 0644);
+    int fd = shm_open(nombreBuffer, O_RDWR | O_CREAT, 0666);
     if(fd < 0){
         printf("Error de shm_open\n");        
         return 1;
@@ -96,7 +96,7 @@ int main(int argc, char** argv){
         return 1;
     }
     printf("Largo: %d\n", len);
-    bufptr = mmap(NULL,len, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+    bufptr = mmap(0,len, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
     
     if(bufptr == MAP_FAILED){
     	printf("Error al crear la memoria compartida (mmap)\n");
