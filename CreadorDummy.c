@@ -34,7 +34,6 @@ struct auxiliar_t{
     int CONSUMIDORES;		//total de consumidores vivos
     
     char mensaje_log[LOGMAX];
-    char **BUFFER;
 } ;
 
 struct auxiliar_t* auxptr;
@@ -116,8 +115,7 @@ int main(int argc, char** argv){
     }
 
     
-    //INICIALIZA VALROES DE STRUCT
-    
+    //INICIALIZA VALROES DE STRUCT    
     
     sem_init(&auxptr->SEM_CONSUMIDORES, 1, 1);
     sem_init(&auxptr->SEM_PRODUCTORES, 1, 1);
@@ -133,8 +131,6 @@ int main(int argc, char** argv){
     auxptr->max_buffer = buff_size;
     
     //printf("Largo: %ld\n", sizeof(bufptr));
-    int i = sysconf(_SC_PAGE_SIZE);
-    printf("Page size: %d\n" ,i);
     strcpy(bufptr[0], "Hola");
     printf("Memoria compartida creada correctamente\n");
     printf("Mensaje: %s\n",bufptr[0]);

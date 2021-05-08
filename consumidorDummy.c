@@ -34,7 +34,6 @@ struct auxiliar_t{
     int CONSUMIDORES;		//total de consumidores vivos
     
     char mensaje_log[LOGMAX];
-    char **BUFFER;
 } ;
 
 struct auxiliar_t* auxptr;
@@ -115,7 +114,6 @@ int main(int argc, char **argv)
     	return 1;
     }
     bufferSize  = auxptr->max_buffer;
-    bufptr = mmap(0,ENTRYMAX*bufferSize, PROT_READ|PROT_WRITE, MAP_SHARED, fd,len+5);
     printf("Tamaño de buffer: %d\n", auxptr->max_buffer);
     
     int fd2 = shm_open(nombreBuffer, O_RDWR, 0600);
