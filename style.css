@@ -1,4 +1,4 @@
-.footerText, .headerText{
+/* .footerText, .headerText{
     font-size: 16px;
     font-weight: bold;
     color: black;
@@ -16,7 +16,6 @@
 }
 .footerText{
     font-size: 20px;
-    /* text-align: left; */
 }
 
 .buttonStart{
@@ -28,11 +27,10 @@
     margin-right: 290px;
 }
 
-/* About threads */
 .percentage{
     font-size: 16px;
     margin-bottom: 4px;
-}
+} */
 
 .progressBar{
     margin-right: 10px;
@@ -42,6 +40,7 @@
     margin-bottom: 5px;
     padding-top: 12px;
     padding-bottom: 9px;
+    background-color: #CE5C00;
 }
 .progressBar > trough > progress, .currentProgressBar > trough > progress{
     background-image: none;
@@ -51,7 +50,8 @@
     border-radius: 2px 4px 4px 2px;
 }
 .progressBar > trough > progress{
-    background-color: #888;
+    /* background-color: #888; */
+    background-color: #27ae60;
 }
 .currentProgressBar > trough > progress {
     background-color: #27ae60;

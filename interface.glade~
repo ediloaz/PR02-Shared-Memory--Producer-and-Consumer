@@ -133,11 +133,96 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">label</property>
-                <property name="xalign">0</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">▼ Escribiendo</property>
+                    <property name="xalign">0.0099999997764825821</property>
+                    <attributes>
+                      <attribute name="foreground" value="#4e4e9a9a0606"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">▲ Leyendo</property>
+                    <property name="xalign">0.0099999997764825821</property>
+                    <attributes>
+                      <attribute name="foreground" value="#cece5c5c0000"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkGrid">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <child>
+                      <object class="GtkProgressBar">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="hexpand">True</property>
+                        <property name="fraction">0.12</property>
+                        <property name="text" translatable="yes">zxc</property>
+                        <style>
+                          <class name="progressBar"/>
+                        </style>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="lbl_bufferInicio">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="label" translatable="yes">0</property>
+                        <attributes>
+                          <attribute name="font-desc" value="Sans 11"/>
+                        </attributes>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="lbl_bufferFin">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="label" translatable="yes">9820</property>
+                        <attributes>
+                          <attribute name="font-desc" value="Sans 11"/>
+                        </attributes>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">0</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="left_attach">0</property>
