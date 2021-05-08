@@ -36,7 +36,7 @@ void IniciarBitacora(){
 
 // Función auxiliar
 void _RenderizarCantidadProductoresOConsumidoresActivos(int cantidad, bool esProductor){
-    char stringValue[10];   // stringValue Debe ser lo bastante grande
+    char stringValue[200];   // stringValue Debe ser lo bastante grande
     sprintf(stringValue, "%i", cantidad);
     gtk_label_set_text(GTK_LABEL(esProductor ? g_lbl_cantidadProductoresActivos : g_lbl_cantidadConsumidoresActivos ), stringValue);
 }
@@ -51,6 +51,12 @@ void RenderizarCantidadProductoresActivos(int cantidad)
 void RenderizarCantidadConsumidoresActivos(int cantidad)
 {
     _RenderizarCantidadProductoresOConsumidoresActivos(cantidad, false);
+}
+
+void DefinirNombreBuffer(){
+    char stringValue[20];   // stringValue Debe ser lo bastante grande
+    sprintf(stringValue, "Nombre del Buffer");
+    gtk_label_set_text(GTK_LABEL(g_lbl_nombreBuffer ), stringValue);
 }
 
 // Creación de la interfaz
@@ -78,6 +84,7 @@ void IniciarInterfaz(int argc, char *argv[])
     
     
     // Ejemplo de Renderizar/Pintar en interfaz
+    DefinirNombreBuffer();
     RenderizarCantidadProductoresActivos(9);
     RenderizarCantidadConsumidoresActivos(180);
     IniciarBitacora();
