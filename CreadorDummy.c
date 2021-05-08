@@ -13,7 +13,7 @@
 
 #define NAMEMAX 100 		//tamaño máximo del numbre del buffer
 #define LOGMAX 100 
-#define ENTRYMAX 64
+#define ENTRYMAX 164
 #define AUX "\auxiliar"
 
 //COMPILAR: gcc CreadorDummy.c -o creador -lpthread -lrt
@@ -42,10 +42,14 @@ void sig_handler(int signum){
 
    if(signum == SIGUSR1){
        printf("Recibí la señal de creacion de consumidor. Ahora hay: %d vivos\n",auxptr->CONSUMIDORES );
-       
+       printf("LOG: %s\n", auxptr->mensaje_log);       
    }
-
 }
+
+void sig_handlerLog(int signum){
+   printf("LOG: %s\n", auxptr->mensaje_log);
+}
+
 
 int main(int argc, char** argv){
        
@@ -82,6 +86,7 @@ int main(int argc, char** argv){
     }
     
     signal(SIGUSR1, sig_handler);
+    signal(SIGUSR2, sig_handlerLog);
     
     
     struct buffer_t{
