@@ -1,8 +1,6 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
-
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,9 +11,33 @@
 #include <sys/types.h>
 #include <semaphore.h>
 
-#define NAMEMAX 100
+#define NAMEMAX 100 		//tamaño máximo del numbre del buffer
+#define LOGMAX 164
+#define ENTRYMAX 64
+#define AUX "\auxiliar"
 
-//gcc consumidor.c -o consumidor -lm
+//gcc consumidorDummy.c -o consumidor -lm -lpthread -lrt
+
+struct auxiliar_t{    
+    int index_lectura;		//Índice de lectura
+    int index_escritura;	//Índice de escritura
+    int max_buffer;		//Tamaño máximo de capacidad del buffer
+    
+    sem_t SEM_CONSUMIDORES; 	//semáforo de total de consumidores vivos
+    sem_t SEM_PRODUCTORES; 	//semáforo de total de productores vivos
+    
+    sem_t SEM_LLENO;	     	//semáforo de buffer lleno
+    sem_t SEM_VACIO;		//semáforo de buffer vacío
+    sem_t SEM_BUFFER;		//semáforo de acceso a buffer    
+    int PRODUCTORES;		//total de productores vivos
+    int CONSUMIDORES;		//total de consumidores vivos
+    
+    char mensaje_log[LOGMAX];
+} ;
+
+struct auxiliar_t* auxptr;
+
+char (*bufptr)[ENTRYMAX];
 
 int contadorMensajes = 0;
 double contadorTiempoEspera = 0;
@@ -73,92 +95,140 @@ int main(int argc, char **argv)
     }
     printf("Consumidor(%d) empieza.\n", pid);
 
-    void* ptrConsumidores = mmap(0, 4096, PROT_READ, MAP_SHARED, shm_open("CONSUMIDORES", O_RDWR, 0666), 0);
-    void* ptrIndiceLectura = mmap(0, 4096, PROT_READ, MAP_SHARED, shm_open("INDICELECTURA", O_RDWR, 0666), 0);
-    void* ptrProductores = mmap(0, 4096, PROT_READ, MAP_SHARED, shm_open("PRODUCTORES", O_RDWR, 0666), 0);
-    void* ptrBuffer = mmap(0, 4096, PROT_READ, MAP_SHARED, shm_open("BUFFER", O_RDWR, 0666), 0);
+    //=======Consigue direccion de memoria compartida=======
+    int len = sizeof(struct auxiliar_t);
+    int fd = shm_open(AUX, O_RDWR, 0600);
+    if(fd == -1){
+        printf("Fallo de shm_open\n");
+        return 1;
+    }
+    if(ftruncate(fd, len) == -1) {
+    	printf("Error de ftruncate\n");        
+        return 1;
+    }
+    struct auxiliar_t* auxptr = mmap(0, len, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+    if(auxptr == MAP_FAILED){
+    	printf("Error de mmap\n");
+    	return 1;
+    }
+    bufferSize  = auxptr->max_buffer;
+    printf("Tamaño de buffer: %d\n", auxptr->max_buffer);
+    
+    int fd2 = shm_open(nombreBuffer, O_RDWR, 0600);
+    if(fd2 == -1){
+    	printf("Fallo de shm_open\n");
+    	return 1;
+    }
+    if(ftruncate(fd2, ENTRYMAX * bufferSize) == -1) {
+    	printf("Error de ftruncate\n");        
+        return 1;
+    }
+    bufptr = mmap(0, ENTRYMAX * bufferSize, PROT_READ|PROT_WRITE, MAP_SHARED, fd2, 0);
 
+    //=======Tiempo bloqueado=======
     tiempoBloqueado = clock();
-    sem_t *semconsumidores = sem_open("SEMCONSUMIDORES", O_CREAT, 0600, 0);
+
+    //Pide semáforo de CONSUMIDORES
+    sem_wait(&auxptr->SEM_CONSUMIDORES);
     tiempoBloqueado = clock() - tiempoBloqueado;
     contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC; 
 
-    if (semconsumidores == SEM_FAILED) printf("SEMCONSUMIDORES Failed\n");     
+    auxptr->CONSUMIDORES++;
+    sem_post(&auxptr->SEM_CONSUMIDORES);
 
-    printf("%d", (char*)ptrConsumidores);
-    int consumidores = atoi((char*)ptrConsumidores) + 1;
-    memcpy(ptrConsumidores, consumidores, sizeof(consumidores));
-    printf("%d", (char*)ptrConsumidores);
-    
-    sem_post(semconsumidores);
+    char msgBitacora[LOGMAX];
+    sprintf(msgBitacora, "El consumidor (%d) fue creado", pid);
+    strcpy(&auxptr->mensaje_log[0], msgBitacora);
     kill(pidCreator, SIGUSR1);
-
+    
     while(1)
     {
+        //Dormir
         double sleepTime = ran_expo(media);
         tiempoEspera = clock();
+        sprintf(msgBitacora, "El consumidor (%d) va a dormir", pid);
+        strcpy(&auxptr->mensaje_log[0], msgBitacora);
+        kill(pidCreator, SIGINT);
         sleep(sleepTime);
         tiempoEspera = clock() - tiempoEspera;
         contadorTiempoEspera += ((double)tiempoEspera)/CLOCKS_PER_SEC + sleepTime;
+        sprintf(msgBitacora, "El consumidor (%d) se despertó", pid);
+        strcpy(&auxptr->mensaje_log[0], msgBitacora);
+        kill(pidCreator, SIGINT);
 
+        //Semaforo Vacio
+        sprintf(msgBitacora, "El consumidor (%d) va a pedir el semáforo de vacío", pid);
+        strcpy(&auxptr->mensaje_log[0], msgBitacora);
+        kill(pidCreator, SIGINT);
         tiempoBloqueado = clock();
-        sem_t *semvacio = sem_open("SEMVACIO", O_CREAT, 0600, 0);
+        sem_wait(&auxptr->SEM_VACIO);
         tiempoBloqueado = clock() - tiempoBloqueado;
         contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC; 
+        sprintf(msgBitacora, "El consumidor (%d) recibió el semáforo de vacío", pid);
+        strcpy(&auxptr->mensaje_log[0], msgBitacora);
+        kill(pidCreator, SIGINT);
 
+        //Semaforo Buffer
+        sprintf(msgBitacora, "El consumidor (%d) va a pedir el semáforo del buffer", pid);
+        strcpy(&auxptr->mensaje_log[0], msgBitacora);
+        kill(pidCreator, SIGINT);
         tiempoBloqueado = clock();
-        sem_t *sembuffer = sem_open("SEMBUFFER", O_CREAT, 0600, 0);
+        sem_wait(&auxptr->SEM_BUFFER);
         tiempoBloqueado = clock() - tiempoBloqueado;
         contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC; 
+        sprintf(msgBitacora, "El consumidor (%d) recibió el semáforo del buffer", pid);
+        strcpy(&auxptr->mensaje_log[0], msgBitacora);
+        kill(pidCreator, SIGINT);
 
-        //Leer el índice de lectura
-        printf("%d", (char*)ptrIndiceLectura);
-        int indice = atoi((char*)ptrIndiceLectura);
-        
-        printf("%d", (char*)ptrIndiceLectura);
+        //Leer mensaje
+        char * mensaje = bufptr[auxptr->index_lectura];
 
-        //Leer el contador de productores vivos
-        int contadorProductoresVivos = atoi((char*)ptrProductores);
-
-        //Leer el contador de consumidores vivos
-        int contadorConsumidoresVivos = atoi((char*)ptrConsumidores);
-
-        //Leer buffer en indice CUIDADO
-        char *mensaje = &ptrBuffer[indice];
+        sprintf(msgBitacora, "El consumidor (%d) leyó en el índice %d el mensaje: %s", pid, auxptr->index_lectura, mensaje);
 
         //Aumentar indice de lectura circular
-        indice = (indice + 1) % bufferSize;
-        memcpy(ptrIndiceLectura, indice, sizeof(indice));
+        auxptr->index_lectura = auxptr->index_lectura + 1 % bufferSize;
 
         //TODO: Borrar el mensaje
-        memcpy(&ptrBuffer[indice], "", sizeof(""));
+        strcpy(bufptr[auxptr->index_lectura], "");
 
-        //Devolver semaforo de indice de lectura
-        sem_post(sembuffer);
-        sem_post(semvacio);
-
+        strcpy(&auxptr->mensaje_log[0], msgBitacora);
         kill(pidCreator, SIGALRM);
 
-        printf("Consumidor(%d) lee mensaje, con el indice de entrada: %d. Productores vivos: %d, consumidores vivos: %d.\n", pid, indice, contadorProductoresVivos, contadorConsumidoresVivos);
+        //Devolver semaforo de buffer
+        sem_post(&auxptr->SEM_BUFFER);
+        sprintf(msgBitacora, "El consumidor (%d) liberó el semáforo del buffer", pid);
+        strcpy(&auxptr->mensaje_log[0], msgBitacora);
+        kill(pidCreator, SIGINT);
+
+        sem_post(&auxptr->SEM_VACIO);
+        sprintf(msgBitacora, "El consumidor (%d) liberó el semáforo de vacio", pid);
+        strcpy(&auxptr->mensaje_log[0], msgBitacora);
+        kill(pidCreator, SIGINT);
+
+        printf("Consumidor(%d) lee mensaje, con el indice de entrada: %d. Productores vivos: %d, consumidores vivos: %d.\n", pid, indice, auxptr->PRODUCTORES, auxptr->CONSUMIDORES);
 
         contadorMensajes++;
 
-        int llave = atoi("5");
-        llave = contadorMensajes;
+        int llave = atoi(mensaje[8]);
 
         if (llave == 5 || pid % 5 == llave)
         {
             tiempoBloqueado = clock();
-            sem_wait(semconsumidores);
+            sem_wait(&auxptr->SEM_CONSUMIDORES);
             tiempoBloqueado = clock() - tiempoBloqueado;
             contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC;
             //Decrementar el contador de consumidores vivos
-            int consumidores = atoi((char*)ptrConsumidores) - 1;
-            memcpy(ptrConsumidores, consumidores, sizeof(consumidores));
+            auxptr->CONSUMIDORES--;
+
             //Devolver el semaforo de contador de consumidores vivos
-            sem_post(semconsumidores);
+            sem_post(&auxptr->SEM_CONSUMIDORES);
 
             printf("Consumidor(%d) termina con %d mensajes, %f segundos esperando y %f segundos bloqueado.\n", pid, contadorMensajes, contadorTiempoEspera, contadorTiempoBloqueado);
+
+            sprintf(msgBitacora, "El consumidor (%d) murió", pid);
+            strcpy(&auxptr->mensaje_log[0], msgBitacora);
+            kill(pidCreator, SIGUSR1);
+
             return 0;
         }
     }
