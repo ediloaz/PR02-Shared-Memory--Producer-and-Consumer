@@ -85,7 +85,7 @@ int main(int argc, char** argv){
     signal(SIGUSR1, sig_handler);
     
     //DECLARA MEMORIA COMPARTIDA    
-    int len = sizeof(struct buffer_t);
+    int len = 4096;
     int fd = shm_open(nombreBuffer, O_RDWR | O_CREAT, 0644);
     if(fd < 0){
         printf("Error de shm_open\n");        
@@ -96,7 +96,7 @@ int main(int argc, char** argv){
         return 1;
     }
     printf("Largo: %d\n", len);
-    bufptr = mmap(NULL, sizeof(struct buffer_t), PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+    bufptr = mmap(NULL,len, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
     
     if(bufptr == MAP_FAILED){
     	printf("Error al crear la memoria compartida (mmap)\n");

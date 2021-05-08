@@ -14,10 +14,9 @@
 #define NAMEMAX 100 		//tamaño máximo del numbre del buffer
 #define LOGMAX 100 
 #define ENTRYMAX 64
-//gcc consumidor.c -o consumidor -lm -lpthread -lrt
+//gcc consumidorDummy.c -o consumidor -lm -lpthread -lrt
 
-struct buffer_t{
-    char** BUFFER;		//Buffer de mensajes
+struct buffer_t{    
     int index_lectura;		//Índice de lectura
     int index_escritura;	//Índice de escritura
     int max_buffer;		//Tamaño máximo de capacidad del buffer
@@ -34,6 +33,7 @@ struct buffer_t{
     int CONSUMIDORES;		//total de consumidores vivos
     
     char mensaje_log[LOGMAX];
+    char** BUFFER;		//Buffer de mensajes
 } ;
 
 int contadorMensajes = 0;
@@ -93,31 +93,36 @@ int main(int argc, char **argv)
     printf("Consumidor(%d) empieza.\n", pid);
     
 
-    //Consigue direccion de memoria compartida
-    struct buffer_t* ptrBuffer = (struct buffer_t* )mmap(0, 4096, PROT_READ, MAP_SHARED, shm_open(nombreBuffer, O_RDWR, 0666), 0);
+    //=======Consigue direccion de memoria compartida=======
+    struct buffer_t* ptrBuffer = (struct buffer_t* )mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_SHARED, shm_open(nombreBuffer, O_RDWR, 0666), 0);
     if(ptrBuffer == MAP_FAILED){
     	printf("Error de mmap\n");
     	return 1;
     }
     
-    printf("PROBLEMA!!!:Tamaño de buffer: %d\n", ptrBuffer->max_buffer);
+    printf("Tamaño de buffer: %d\n", ptrBuffer->max_buffer);    
     
-
+    //=======Tiempo bloqueado=======
     tiempoBloqueado = clock();
     tiempoBloqueado = clock() - tiempoBloqueado;
     contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC; 
      
-    printf("Hola\n");
+     
+    /*=======ACTUALIZAR TOTAL CONSUMIDORES=======*/
+    //Pide semáforo de CONSUMIDORES
     sem_wait(&ptrBuffer->SEM_CONSUMIDORES);
-    printf("Hola2\n");
+
+    //printf("Total consumidores vivos: %d\n", ptrBuffer->CONSUMIDORES);    
+    memcpy(&ptrBuffer->CONSUMIDORES, (int*)ptrBuffer->CONSUMIDORES + 1, sizeof(ptrBuffer->CONSUMIDORES));
     printf("Total consumidores vivos: %d\n", ptrBuffer->CONSUMIDORES);
-    ptrBuffer->CONSUMIDORES++;
-    //memcpy(ptrBuffer->CONSUMIDORES, c, 4096);
-    printf("Total consumidores vivos: %d\n", ptrBuffer->CONSUMIDORES);
-    
-    sem_post(&ptrBuffer->SEM_CONSUMIDORES);
+    //Retorna semáforo
+    //sem_post(&ptrBuffer->SEM_CONSUMIDORES);
+    //Envía señal a creador de actualización del valor
     kill(pidCreator, SIGUSR1);
+    
+    
     return 0;
+}
 /*
     while(1)
     {
@@ -187,5 +192,5 @@ int main(int argc, char **argv)
             printf("Consumidor(%d) termina con %d mensajes, %f segundos esperando y %f segundos bloqueado.\n", pid, contadorMensajes, contadorTiempoEspera, contadorTiempoBloqueado);
             return 0;
         }
-    }*/
-}
+    }
+}*/
