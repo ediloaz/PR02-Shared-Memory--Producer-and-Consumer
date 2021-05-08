@@ -145,16 +145,12 @@
                       <object class="GtkLabel" id="lbl_leyendo">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="halign">start</property>
                         <property name="margin_left">1</property>
                         <property name="margin_right">1</property>
                         <property name="margin_top">3</property>
                         <property name="margin_bottom">4</property>
-                        <property name="xpad">3</property>
-                        <property name="ypad">2</property>
                         <property name="label" translatable="yes">▲ Leyendo (pos: 0)</property>
-                        <property name="xalign">1</property>
-                        <property name="yalign">0.5</property>
+                        <property name="xalign">0.76999998092651367</property>
                         <attributes>
                           <attribute name="font-desc" value="Monospace 10"/>
                           <attribute name="foreground" value="#cece5c5c0000"/>
@@ -216,8 +212,8 @@
                       <object class="GtkLabel" id="lbl_escribiendo">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">▼ Escribiendo (pos: 0)</property>
-                        <property name="xalign">1</property>
+                        <property name="label" translatable="yes">Escribiendo (pos: 0) ▼ </property>
+                        <property name="xalign">0.15000000596046448</property>
                         <attributes>
                           <attribute name="font-desc" value="Monospace 10"/>
                           <attribute name="foreground" value="#4e4e9a9a0606"/>
@@ -245,9 +241,6 @@
                     <property name="left_attach">0</property>
                     <property name="top_attach">1</property>
                   </packing>
-                </child>
-                <child>
-                  <placeholder/>
                 </child>
                 <child>
                   <placeholder/>
