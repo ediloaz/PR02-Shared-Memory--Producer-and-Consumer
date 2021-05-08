@@ -50,6 +50,14 @@ void sig_handlerLog(int signum){
    printf("LOG: %s\n", auxptr->mensaje_log);
 }
 
+void sig_handlerBuff(int signum){
+
+   if(signum == SIGALRM){
+       printf("Buffer leido: INDEX_LECTURA: %d, INDEX_ESCRITURA: %d",auxptr->index_lectura, auxptr->index_escritura );
+       printf("LOG: %s\n", auxptr->mensaje_log);       
+   }
+}
+
 
 int main(int argc, char** argv){
        
@@ -87,6 +95,7 @@ int main(int argc, char** argv){
     
     signal(SIGUSR1, sig_handler);
     signal(SIGUSR2, sig_handlerLog);
+    signal(SIGALRM, sig_handlerBuff);
     
     
     struct buffer_t{
