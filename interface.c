@@ -17,10 +17,43 @@ GtkWidget *g_lbl_cantidadConsumidoresActivos;
 GtkWidget *g_lbl_bitacora;
 GtkWidget *g_txt_bitacora;
 GtkTextBuffer *g_buffer_bitacora;
+GtkWidget *g_lbl_bufferFin;     // Renderizará el tamaño del buffer
+GtkWidget *g_lbl_leyendo;       // Etiqueta con el puntero de "Leyendo"
+GtkWidget *g_lbl_escribiendo;   // Etiqueta con el puntero de "Escribiendo"
 
 // Constantes para usar en bitácora
 const int bitacora_lineasInicialesEscritas = 0;
 const int bitacora_lineasUsadasPorEscritura = 3;
+
+int tamanoTotalBuffer = 9500;
+
+void EscribirBuffer(){
+    printf("escribo");
+    // GtkAlign prueba = gtk_widget_get_halign (g_lbl_leyendo);
+    // // printf(prueba);
+    // // double asd = prueba;
+    // char stringValue[10];   // stringValue Debe ser lo bastante grande
+    // sprintf(stringValue, "%d", prueba);
+    // gtk_label_set_text(GTK_LABEL(g_lbl_leyendo), stringValue);
+    // gtk_widget_set_halign(GTK_LABEL(g_lbl_leyendo), 0.4);
+}
+
+void LeerBuffer(){
+    printf("leo");
+    // GtkAlign prueba = gtk_widget_get_halign (g_lbl_leyendo);
+    // // gint marginLeft = gtk_widget_get_margin_left (g_lbl_leyendo);
+    // float marginLeft = 123;
+    // char stringValue[100];   // stringValue Debe ser lo bastante grande
+    // sprintf(stringValue, "%d", marginLeft);
+    // gtk_label_set_text(GTK_LABEL(g_lbl_leyendo), stringValue);
+}
+
+void InicializarBuffer(){
+    char stringValue[20];   // stringValue Debe ser lo bastante grande
+    sprintf(stringValue, "%i", tamanoTotalBuffer);
+    gtk_label_set_text(GTK_LABEL(g_lbl_bufferFin), stringValue);
+}
+
 
 void EscribirEnBitacora(char *texto){
     gint lineaSiguiente = gtk_text_buffer_get_line_count (g_buffer_bitacora)/bitacora_lineasUsadasPorEscritura - bitacora_lineasInicialesEscritas;
@@ -33,8 +66,6 @@ void EscribirEnBitacora(char *texto){
 void TestearEscribirEnBitacora(){
     EscribirEnBitacora("Ésto es un ejemplo del mensaje a imprimir en la bitácora");
 }
-
-
 
 void IniciarBitacora(){
     gchar *text = "Bitácora :)  \n\n";
@@ -82,15 +113,18 @@ void IniciarInterfaz(int argc, char *argv[])
         GTK_STYLE_PROVIDER(cssProvider),
         GTK_STYLE_PROVIDER_PRIORITY_USER);
 
-    
-    // Referencia de los componentes en interfaz que se ocupan manejar con código
+    // Instancia de los componentes en interfaz que se ocupan manejar con código
     g_lbl_nombreBuffer = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_nombreBuffer"));
     g_lbl_cantidadProductoresActivos = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_cantidadProductoresActivos"));
     g_lbl_cantidadConsumidoresActivos = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_cantidadConsumidoresActivos"));
-    g_txt_bitacora = GTK_WIDGET(gtk_builder_get_object(builder, "txt_bitacora"));   // Way with text
-    g_buffer_bitacora = gtk_text_view_get_buffer( GTK_TEXT_VIEW(g_txt_bitacora) );             // Way with text
+    g_lbl_bufferFin = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_bufferFin"));
+    g_lbl_leyendo = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_leyendo"));
+    g_lbl_escribiendo = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_escribiendo"));
+    g_txt_bitacora = GTK_WIDGET(gtk_builder_get_object(builder, "txt_bitacora"));
+    g_buffer_bitacora = gtk_text_view_get_buffer( GTK_TEXT_VIEW(g_txt_bitacora) );
 
     // Ejemplo de Renderizar/Pintar en interfaz
+    InicializarBuffer();
     DefinirNombreBuffer();
     RenderizarCantidadProductoresActivos(9);
     RenderizarCantidadConsumidoresActivos(180);
