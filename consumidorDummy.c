@@ -12,26 +12,26 @@
 #include <semaphore.h>
 
 #define NAMEMAX 100 		//tamaño máximo del numbre del buffer
-#define LOGMAX 100 
+#define LOGMAX 100
 #define ENTRYMAX 64
 //gcc consumidorDummy.c -o consumidor -lm -lpthread -lrt
 
-struct buffer_t{    
+struct buffer_t{
     int index_lectura;		//Índice de lectura
     int index_escritura;	//Índice de escritura
     int max_buffer;		//Tamaño máximo de capacidad del buffer
-    
+
     sem_t SEM_CONSUMIDORES; 	//semáforo de total de consumidores vivos
     sem_t SEM_PRODUCTORES; 	//semáforo de total de productores vivos
-    
+
     sem_t SEM_LLENO;	     	//semáforo de buffer lleno
     sem_t SEM_VACIO;		//semáforo de buffer vacío
     sem_t SEM_CBUFFER;		//semáforo de acceso a buffer de consumidores
     sem_t SEM_PBUFFER;		//Semáforo de acceso a buffer de productores
-    
+
     int PRODUCTORES;		//total de productores vivos
     int CONSUMIDORES;		//total de consumidores vivos
-    
+
     char mensaje_log[LOGMAX];
     char** BUFFER;		//Buffer de mensajes
 } ;
@@ -53,10 +53,10 @@ double ran_expo(double lambda)
 
 int main(int argc, char **argv)
 {
-    pid = getpid();  
+    pid = getpid();
     char nombreBuffer[NAMEMAX] = "nombreBuffer";
     int media = 3;
-    
+
     int paramIndex = 1;
     int bufferSize = 10;
 
@@ -66,7 +66,7 @@ int main(int argc, char **argv)
     {
     	char* param = argv[paramIndex];
     	paramIndex++;
-    	
+
     	if(param[0] == '-'){
     	    switch(param[1]){
     	    	case 'n':
@@ -88,10 +88,10 @@ int main(int argc, char **argv)
     	    	printf("Error: Parámetro no reconocido\n");
     	    	return 1;
     	    }
-    	}   	  	
+    	}
     }
     printf("Consumidor(%d) empieza.\n", pid);
-    
+
 
     //=======Consigue direccion de memoria compartida=======
     struct buffer_t* ptrBuffer = (struct buffer_t* )mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_SHARED, shm_open(nombreBuffer, O_RDWR, 0666), 0);
@@ -99,28 +99,30 @@ int main(int argc, char **argv)
     	printf("Error de mmap\n");
     	return 1;
     }
-    
-    printf("Tamaño de buffer: %d\n", ptrBuffer->max_buffer);    
-    
+
+    printf("Tamaño de buffer: %d\n", ptrBuffer->max_buffer);
+
     //=======Tiempo bloqueado=======
     tiempoBloqueado = clock();
     tiempoBloqueado = clock() - tiempoBloqueado;
-    contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC; 
-     
-     
+    contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC;
+
+
     /*=======ACTUALIZAR TOTAL CONSUMIDORES=======*/
     //Pide semáforo de CONSUMIDORES
-    sem_wait(&ptrBuffer->SEM_CONSUMIDORES);
+//    sem_wait(&ptrBuffer->SEM_CONSUMIDORES);
 
-    //printf("Total consumidores vivos: %d\n", ptrBuffer->CONSUMIDORES);    
-    memcpy(&ptrBuffer->CONSUMIDORES, (int*)ptrBuffer->CONSUMIDORES + 1, sizeof(ptrBuffer->CONSUMIDORES));
+    //printf("Total consumidores vivos: %d\n", ptrBuffer->CONSUMIDORES);
+    //printf("Antes memcpy\n");
+    memcpy(&ptrBuffer->CONSUMIDORES, &(ptrBuffer->CONSUMIDORES) + 1, sizeof(ptrBuffer->CONSUMIDORES));
+    //printf("Después memcpy\n");
     printf("Total consumidores vivos: %d\n", ptrBuffer->CONSUMIDORES);
     //Retorna semáforo
     //sem_post(&ptrBuffer->SEM_CONSUMIDORES);
     //Envía señal a creador de actualización del valor
     kill(pidCreator, SIGUSR1);
-    
-    
+
+
     return 0;
 }
 /*
@@ -135,17 +137,17 @@ int main(int argc, char **argv)
         tiempoBloqueado = clock();
         sem_t *semvacio = sem_open("SEMVACIO", O_CREAT, 0600, 0);
         tiempoBloqueado = clock() - tiempoBloqueado;
-        contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC; 
+        contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC;
 
         tiempoBloqueado = clock();
         sem_t *sembuffer = sem_open("SEMBUFFER", O_CREAT, 0600, 0);
         tiempoBloqueado = clock() - tiempoBloqueado;
-        contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC; 
+        contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC;
 
         //Leer el índice de lectura
         printf("%d", (char*)ptrIndiceLectura);
         int indice = atoi((char*)ptrIndiceLectura);
-        
+
         printf("%d", (char*)ptrIndiceLectura);
 
         //Leer el contador de productores vivos
