@@ -21,9 +21,11 @@ struct auxiliar_t{
     int index_lectura;		//Índice de lectura
     int index_escritura;	//Índice de escritura
     int max_buffer;		//Tamaño máximo de capacidad del buffer
+    int flag_productor; //Flag del productor
 
     sem_t SEM_CONSUMIDORES; 	//semáforo de total de consumidores vivos
     sem_t SEM_PRODUCTORES; 	//semáforo de total de productores vivos
+    sem_t SEM_FINALIZADOR;  //semáforo del finalizador
 
     sem_t SEM_LLENO;	     	//semáforo de buffer lleno
     sem_t SEM_VACIO;		//semáforo de buffer vacío
@@ -101,6 +103,8 @@ int main(int argc, char** argv){
     	}
     }
 
+
+
     signal(SIGUSR1, sig_handler);
     signal(SIGUSR2, sig_handler_P);
     signal(SIGVTALRM, sig_handlerLog);
@@ -142,6 +146,8 @@ int main(int argc, char** argv){
 
     sem_init(&auxptr->SEM_CONSUMIDORES, 1, 1);
     sem_init(&auxptr->SEM_PRODUCTORES, 1, 1);
+    sem_init(&auxptr->SEM_FINALIZADOR, 1, 1);
+
 
     sem_init(&auxptr->SEM_LLENO, 1, 0);
     sem_init(&auxptr->SEM_VACIO, 1, buff_size-1);
@@ -151,6 +157,8 @@ int main(int argc, char** argv){
     auxptr->index_lectura = auxptr->index_escritura = 0;
     auxptr->PRODUCTORES = auxptr->CONSUMIDORES = 0;
     auxptr->max_buffer = buff_size;
+    auxptr->flag_productor = 1;
+
 
     //printf("Largo: %ld\n", sizeof(bufptr));
     printf("Memoria compartida creada correctamente\n");
