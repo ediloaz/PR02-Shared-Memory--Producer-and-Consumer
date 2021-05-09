@@ -19,7 +19,11 @@ GtkTextBuffer *g_buffer_bitacora;
 GtkWidget *g_lbl_bufferFin;     // Renderizará el tamaño del buffer
 GtkWidget *g_lbl_leyendo;       // Etiqueta con el puntero de "Leyendo"
 GtkWidget *g_lbl_escribiendo;   // Etiqueta con el puntero de "Escribiendo"
-GtkWidget *g_contenedorBuffer;  
+GtkWidget *g_contenedorBuffer;
+GtkWidget *g_progressBarLector1;
+GtkWidget *g_progressBarLector2;
+GtkWidget *g_progressBarEscritor1;
+GtkWidget *g_progressBarEscritor2;
 // testing
 GtkWidget *g_entry_escritura;
 GtkWidget *g_entry_lectura;
@@ -41,6 +45,11 @@ int tamanoTotalBuffer = 9500;       // POR MIENTRAS ES QUEMADO, SE DEBE LEER DE 
 void PrintInt(int value){
     char stringValue[100];
     sprintf(stringValue, "%d", value);
+    printf("%s", stringValue);
+}
+void PrintFloat(float value){
+    char stringValue[100];
+    sprintf(stringValue, "%f", value);
     printf("%s", stringValue);
 }
 
@@ -72,9 +81,12 @@ bool _cambioEtiquetaDeLado(GtkWidget * widget, int indiceActual){
 }
 
 // Calcula la posición de las etiquetas de "Leyendo" y "Escribiendo".
-// Esta función usa las constantes del tamaño del ancho de:
-//      1. La ventana
-//      2. El label/etiqueta
+float _calcularLlenadoBufferGraficoEnPorcentaje(int indiceActual){
+    int anchoTotal = 100;
+    float porcentaje = 1.0 * indiceActual / tamanoTotalBuffer;
+    return porcentaje;
+}
+// Calcula la posición de las etiquetas de "Leyendo" y "Escribiendo".
 int _calcularPosicionEtiquetaEnPX(GtkWidget * widget, int indiceActual){
     int anchoTotal = getAnchoWidget(g_contenedorBuffer);
     int pos = (int)(anchoTotal * indiceActual / tamanoTotalBuffer);
@@ -87,8 +99,9 @@ int _calcularPosicionEtiquetaEnPX(GtkWidget * widget, int indiceActual){
 // Llamar esta función para actualizar (1) interfaz el gráfica del buffer y (2) posición del puntero de la etiqueta LECTURA
 void ActualizarIndiceLectura(int indiceLectura){
     // Actualizar el gráfico de la Interfaz
-    // TODO
-
+    float porcentaje = _calcularLlenadoBufferGraficoEnPorcentaje(indiceLectura);
+    gtk_progress_bar_set_fraction(g_progressBarLector1, porcentaje);
+    
     // Actualizar la etiqueta
     int pos = _calcularPosicionEtiquetaEnPX(g_lbl_leyendo, indiceLectura);
     gtk_widget_set_margin_start(g_lbl_leyendo, pos);
@@ -100,7 +113,8 @@ void ActualizarIndiceLectura(int indiceLectura){
 // Llamar esta función para actualizar (1) interfaz el gráfica del buffer y (2) posición del puntero de la etiqueta ESCRITURA
 void ActualizarIndiceEscritura(int indiceEscritura){
     // Actualizar el gráfico de la Interfaz
-    // TODO
+    float porcentaje = _calcularLlenadoBufferGraficoEnPorcentaje(indiceEscritura);
+    gtk_progress_bar_set_fraction(g_progressBarEscritor1, porcentaje);
 
     // Actualizar la etiqueta
     int pos = _calcularPosicionEtiquetaEnPX(g_lbl_escribiendo, indiceEscritura);
@@ -220,7 +234,11 @@ void IniciarInterfaz(int argc, char *argv[])
     g_lbl_escribiendo = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_escribiendo"));
     g_txt_bitacora = GTK_WIDGET(gtk_builder_get_object(builder, "txt_bitacora"));
     g_buffer_bitacora = gtk_text_view_get_buffer( GTK_TEXT_VIEW(g_txt_bitacora) );
-    g_contenedorBuffer = GTK_WIDGET(gtk_builder_get_object(builder, "contenedorBuffer"));
+    g_contenedorBuffer = GTK_WIDGET(gtk_builder_get_object(builder, "contenedorBufferEscritor1"));
+    g_progressBarLector1 = GTK_WIDGET(gtk_builder_get_object(builder, "progressBarLector1"));
+    g_progressBarLector2 = GTK_WIDGET(gtk_builder_get_object(builder, "progressBarLector2"));
+    g_progressBarEscritor1 = GTK_WIDGET(gtk_builder_get_object(builder, "progressBarEscritor1"));
+    g_progressBarEscritor2 = GTK_WIDGET(gtk_builder_get_object(builder, "progressBarEscritor2"));
     g_entry_escritura = GTK_WIDGET(gtk_builder_get_object(builder, "entry_escritura"));
     g_entry_lectura = GTK_WIDGET(gtk_builder_get_object(builder, "entry_lectura"));
     

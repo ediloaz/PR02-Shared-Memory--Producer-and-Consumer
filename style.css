@@ -31,28 +31,46 @@
     font-size: 16px;
     margin-bottom: 4px;
 } */
+.contenedorBufferEscritor1{
+    margin-top: 0px;
+}
+.contenedorBufferEscritor2,
+.contenedorBufferLector1,
+.contenedorBufferLector2{
+    margin-top: -30px; 
+}
+
+.contenedorBuffer > .progressBar > trough, .currentProgressBar > trough{
+    background-color: rgba(10, 200, 10, 0);  /* Transparente */
+}
+
+/* Color de llenado de los ESCRITORES/PRODUCTORES */
+.contenedorBufferEscritor1 > .progressBar > trough > progress,
+.contenedorBufferEscritor2 > .progressBar > trough > progress{
+    background-color: #27ae60;
+}
+/* Color de llenado de los LECTORES/CONSUMIDORES */
+.contenedorBufferLector1 > .progressBar > trough > progress,
+.contenedorBufferLector2 > .progressBar > trough > progress{
+    background-color: #CE5C00;
+}
 
 .progressBar{
     margin-right: 0px;
+    /* width: 50; */
 }
 
 .progressBar > trough, .currentProgressBar > trough {
     margin-bottom: 5px;
     padding-top: 12px;
     padding-bottom: 9px;
-    background-color: #CE5C00;
+    background-color: #111214;
 }
 .progressBar > trough > progress, .currentProgressBar > trough > progress{
     background-image: none;
     margin-bottom: 5px;
     padding-top: 10px;
     padding-bottom: 10px;
-    border-radius: 2px 4px 4px 2px;
+    /* border-radius: 2px 4px 4px 2px; */
 }
-.progressBar > trough > progress{
-    /* background-color: #888; */
-    background-color: #27ae60;
-}
-.currentProgressBar > trough > progress {
-    background-color: #27ae60;
-}
+

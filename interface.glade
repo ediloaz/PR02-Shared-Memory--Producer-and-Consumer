@@ -136,54 +136,6 @@
                     <property name="can_focus">False</property>
                     <property name="hexpand">True</property>
                     <child>
-                      <object class="GtkLabel" id="lbl_leyendo">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="halign">start</property>
-                        <property name="label" translatable="yes">▲ Leyendo (pos: 0)</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Monospace 10"/>
-                          <attribute name="foreground" value="#cece5c5c0000"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">2</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="lbl_bufferFin">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="halign">start</property>
-                        <property name="label" translatable="yes">9820</property>
-                        <property name="width_chars">8</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Sans 11"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="left_attach">2</property>
-                        <property name="top_attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="lbl_bufferInicio">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="halign">start</property>
-                        <property name="label" translatable="yes">0</property>
-                        <property name="width_chars">2</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Sans 11"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkLabel" id="lbl_escribiendo">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -200,15 +152,14 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkGrid" id="contenedorBuffer">
+                      <object class="GtkGrid" id="contenedorBufferEscritor1">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <child>
-                          <object class="GtkProgressBar">
+                          <object class="GtkProgressBar" id="progressBarEscritor1">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="hexpand">True</property>
-                            <property name="fraction">0.06999999977648258</property>
                             <property name="pulse_step">0.01</property>
                             <property name="text" translatable="yes">zxc</property>
                             <style>
@@ -220,11 +171,171 @@
                             <property name="top_attach">0</property>
                           </packing>
                         </child>
+                        <style>
+                          <class name="contenedorBuffer"/>
+                          <class name="contenedorBufferEscritor1"/>
+                        </style>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
                         <property name="top_attach">1</property>
                       </packing>
+                    </child>
+                    <child>
+                      <object class="GtkGrid" id="contenedorBufferEscritor2">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkProgressBar" id="progressBarEscritor2">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="hexpand">True</property>
+                            <property name="pulse_step">0.01</property>
+                            <property name="text" translatable="yes">zxc</property>
+                            <style>
+                              <class name="progressBar"/>
+                            </style>
+                          </object>
+                          <packing>
+                            <property name="left_attach">0</property>
+                            <property name="top_attach">0</property>
+                          </packing>
+                        </child>
+                        <style>
+                          <class name="contenedorBuffer"/>
+                          <class name="contenedorBufferEscritor2"/>
+                        </style>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="lbl_leyendo">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="label" translatable="yes">▲ Leyendo (pos: 0)</property>
+                        <attributes>
+                          <attribute name="font-desc" value="Monospace 10"/>
+                          <attribute name="foreground" value="#cece5c5c0000"/>
+                        </attributes>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="lbl_bufferInicio">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="label" translatable="yes">0</property>
+                        <property name="width_chars">2</property>
+                        <attributes>
+                          <attribute name="font-desc" value="Sans 11"/>
+                        </attributes>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="lbl_bufferFin">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="label" translatable="yes">9820</property>
+                        <property name="width_chars">8</property>
+                        <attributes>
+                          <attribute name="font-desc" value="Sans 11"/>
+                        </attributes>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkGrid" id="contenedorBufferLector1">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkProgressBar" id="progressBarLector1">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="hexpand">True</property>
+                            <property name="pulse_step">0.01</property>
+                            <property name="text" translatable="yes">zxc</property>
+                            <style>
+                              <class name="progressBar"/>
+                            </style>
+                          </object>
+                          <packing>
+                            <property name="left_attach">0</property>
+                            <property name="top_attach">0</property>
+                          </packing>
+                        </child>
+                        <style>
+                          <class name="contenedorBuffer"/>
+                          <class name="contenedorBufferLector1"/>
+                        </style>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkGrid" id="contenedorBufferLector2">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkProgressBar" id="progressBarLector2">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="hexpand">True</property>
+                            <property name="pulse_step">0.01</property>
+                            <property name="text" translatable="yes">zxc</property>
+                            <style>
+                              <class name="progressBar"/>
+                            </style>
+                          </object>
+                          <packing>
+                            <property name="left_attach">0</property>
+                            <property name="top_attach">0</property>
+                          </packing>
+                        </child>
+                        <style>
+                          <class name="contenedorBuffer"/>
+                          <class name="contenedorBufferLector2"/>
+                        </style>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
                     </child>
                     <child>
                       <placeholder/>
