@@ -12,7 +12,7 @@
 #include <semaphore.h>
 
 #define NAMEMAX 100 		//tamaño máximo del numbre del buffer
-#define LOGMAX 100
+#define LOGMAX 164
 #define ENTRYMAX 64
 #define AUX "\auxiliar"
 
