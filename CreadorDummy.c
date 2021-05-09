@@ -12,7 +12,7 @@
 #include <fcntl.h>
 
 #define NAMEMAX 100 		//tamaño máximo del numbre del buffer
-#define LOGMAX 100 
+#define LOGMAX 164 
 #define ENTRYMAX 164
 #define AUX "\auxiliar"
 
@@ -27,14 +27,13 @@ struct auxiliar_t{
     
     sem_t SEM_LLENO;	     	//semáforo de buffer lleno
     sem_t SEM_VACIO;		//semáforo de buffer vacío
-    sem_t SEM_CBUFFER;		//semáforo de acceso a buffer de consumidores
-    sem_t SEM_PBUFFER;		//Semáforo de acceso a buffer de productores
-    
+    sem_t SEM_BUFFER;		//semáforo de acceso a buffer    
     int PRODUCTORES;		//total de productores vivos
     int CONSUMIDORES;		//total de consumidores vivos
     
     char mensaje_log[LOGMAX];
 } ;
+
 
 struct auxiliar_t* auxptr;
 
@@ -42,13 +41,16 @@ void sig_handler(int signum){
 
    if(signum == SIGUSR1){
        printf("Recibí la señal de creacion de consumidor. Ahora hay: %d vivos\n",auxptr->CONSUMIDORES );
-       printf("LOG: %s\n", auxptr->mensaje_log);       
+       printf("LOG: %s\n", auxptr->mensaje_log);     
+       
+       sem_post(&auxptr->SEM_LLENO);  
    }
 }
 
 void sig_handlerLog(int signum){
    printf("LOG: %s\n", auxptr->mensaje_log);
 }
+
 
 void sig_handlerBuff(int signum){
 
@@ -94,7 +96,7 @@ int main(int argc, char** argv){
     }
     
     signal(SIGUSR1, sig_handler);
-    signal(SIGUSR2, sig_handlerLog);
+    signal(SIGINT, sig_handlerLog);
     signal(SIGALRM, sig_handlerBuff);
     
     
@@ -137,15 +139,15 @@ int main(int argc, char** argv){
     sem_init(&auxptr->SEM_LLENO, 1, 0);
     sem_init(&auxptr->SEM_VACIO, 1, buff_size);
     
-    sem_init(&auxptr->SEM_CBUFFER, 1, 1);
-    sem_init(&auxptr->SEM_PBUFFER, 1, 1);
+    sem_init(&auxptr->SEM_BUFFER, 1, 1);
     
     auxptr->index_lectura = auxptr->index_escritura = 0;
     auxptr->PRODUCTORES = auxptr->CONSUMIDORES = 0;
     auxptr->max_buffer = buff_size;
     
     //printf("Largo: %ld\n", sizeof(bufptr));
-    strcpy(bufptr[0], "Hola");
+    strcpy(bufptr[0], "Llave: 5, Identificador: 2345, Tiempo: hoy:)");
+    
     printf("Memoria compartida creada correctamente\n");
     printf("Mensaje: %s\n",bufptr[0]);
     //Ciclo infinito para mantenerlo vivo

@@ -140,6 +140,10 @@ int main(int argc, char **argv)
     
     sem_post(&auxptr->SEM_CONSUMIDORES);
     
+    char msgBitacora[LOGMAX];
+    sprintf(msgBitacora, "El consumidor (%d) fue creado", pid);
+    strcpy(&auxptr->mensaje_log[0], msgBitacora);
+    
     kill(pidCreator, SIGUSR1);//Envía señal a creador de actualización del valor
     
     /*=======ESCRIBIR EN EL BUFFER=======*/ 
