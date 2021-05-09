@@ -173,42 +173,12 @@
                         </child>
                         <style>
                           <class name="contenedorBuffer"/>
-                          <class name="contenedorBuffer1"/>
+                          <class name="contenedorBufferEscritor1"/>
                         </style>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
                         <property name="top_attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkGrid" id="contenedorBufferEscritor2">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <child>
-                          <object class="GtkProgressBar" id="progressBarEscritor2">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="hexpand">True</property>
-                            <property name="pulse_step">0.01</property>
-                            <property name="text" translatable="yes">zxc</property>
-                            <style>
-                              <class name="progressBar"/>
-                            </style>
-                          </object>
-                          <packing>
-                            <property name="left_attach">0</property>
-                            <property name="top_attach">0</property>
-                          </packing>
-                        </child>
-                        <style>
-                          <class name="contenedorBuffer"/>
-                          <class name="contenedorBuffer2"/>
-                        </style>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">2</property>
                       </packing>
                     </child>
                     <child>
@@ -281,7 +251,37 @@
                         </child>
                         <style>
                           <class name="contenedorBuffer"/>
-                          <class name="contenedorBuffer3"/>
+                          <class name="contenedorBufferLector1"/>
+                        </style>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkGrid" id="contenedorBufferEscritor2">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkProgressBar" id="progressBarEscritor2">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="hexpand">True</property>
+                            <property name="pulse_step">0.01</property>
+                            <property name="text" translatable="yes">zxc</property>
+                            <style>
+                              <class name="progressBar"/>
+                            </style>
+                          </object>
+                          <packing>
+                            <property name="left_attach">0</property>
+                            <property name="top_attach">0</property>
+                          </packing>
+                        </child>
+                        <style>
+                          <class name="contenedorBuffer"/>
+                          <class name="contenedorBufferEscritor2"/>
                         </style>
                       </object>
                       <packing>
@@ -311,7 +311,7 @@
                         </child>
                         <style>
                           <class name="contenedorBuffer"/>
-                          <class name="contenedorBuffer4"/>
+                          <class name="contenedorBufferLector2"/>
                         </style>
                       </object>
                       <packing>

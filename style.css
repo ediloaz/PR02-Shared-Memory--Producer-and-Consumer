@@ -31,11 +31,11 @@
     font-size: 16px;
     margin-bottom: 4px;
 } */
-.contenedorBufferEscritor1{
+.contenedorBufferLector1{
     margin-top: 0px;
 }
+.contenedorBufferEscritor1,
 .contenedorBufferEscritor2,
-.contenedorBufferLector1,
 .contenedorBufferLector2{
     margin-top: -30px; 
 }
@@ -52,7 +52,7 @@
 /* Color de llenado de los LECTORES/CONSUMIDORES */
 .contenedorBufferLector1 > .progressBar > trough > progress,
 .contenedorBufferLector2 > .progressBar > trough > progress{
-    background-color: #CE5C00;
+    background-color: #111214; /* NARANJA: #CE5C00 */
 }
 
 .progressBar{

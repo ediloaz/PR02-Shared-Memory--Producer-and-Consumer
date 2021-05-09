@@ -57,7 +57,6 @@ void PrintFloat(float value){
 int getAnchoWidget(GtkWidget * widget){
     GtkAllocation* alloc = g_new(GtkAllocation, 1);
     gtk_widget_get_allocation(widget, alloc);
-    printf("widget size is currently %dx%d\n",alloc->width, alloc->height);
     int width = alloc->width;
     g_free(alloc);
     return width;
@@ -72,17 +71,14 @@ int getAnchoWidget(GtkWidget * widget){
 
 bool _cambioEtiquetaDeLado(GtkWidget * widget, int indiceActual){
     if ((int)(indiceActual*100/tamanoTotalBuffer) > buffer_porcentajeParaCambiarEtiqueta){
-        printf("Entró\n");
         return true;
     }else{
-        printf("Salté\n");
         return false;
     }
 }
 
 // Calcula la posición de las etiquetas de "Leyendo" y "Escribiendo".
 float _calcularLlenadoBufferGraficoEnPorcentaje(int indiceActual){
-    int anchoTotal = 100;
     float porcentaje = 1.0 * indiceActual / tamanoTotalBuffer;
     return porcentaje;
 }
@@ -96,12 +92,24 @@ int _calcularPosicionEtiquetaEnPX(GtkWidget * widget, int indiceActual){
     return pos;
 }
 
+void _ActualizarBuffersGraficosAuxiliares(){
+    float porcentajeLector1 = gtk_progress_bar_get_fraction(GTK_PROGRESS_BAR(g_progressBarLector1));
+    float porcentajeEscritor1 = gtk_progress_bar_get_fraction(GTK_PROGRESS_BAR(g_progressBarEscritor1));
+
+    if (porcentajeLector1 > porcentajeEscritor1){
+        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_progressBarLector1), 0.0);
+        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_progressBarLector2), porcentajeLector1);
+        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_progressBarEscritor2), 1.0);
+    }
+}
+
 // Llamar esta función para actualizar (1) interfaz el gráfica del buffer y (2) posición del puntero de la etiqueta LECTURA
 void ActualizarIndiceLectura(int indiceLectura){
     // Actualizar el gráfico de la Interfaz
     float porcentaje = _calcularLlenadoBufferGraficoEnPorcentaje(indiceLectura);
-    gtk_progress_bar_set_fraction(g_progressBarLector1, porcentaje);
-    
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_progressBarLector1), porcentaje);
+    _ActualizarBuffersGraficosAuxiliares();
+
     // Actualizar la etiqueta
     int pos = _calcularPosicionEtiquetaEnPX(g_lbl_leyendo, indiceLectura);
     gtk_widget_set_margin_start(g_lbl_leyendo, pos);
@@ -114,7 +122,8 @@ void ActualizarIndiceLectura(int indiceLectura){
 void ActualizarIndiceEscritura(int indiceEscritura){
     // Actualizar el gráfico de la Interfaz
     float porcentaje = _calcularLlenadoBufferGraficoEnPorcentaje(indiceEscritura);
-    gtk_progress_bar_set_fraction(g_progressBarEscritor1, porcentaje);
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_progressBarEscritor1), porcentaje);
+    _ActualizarBuffersGraficosAuxiliares();
 
     // Actualizar la etiqueta
     int pos = _calcularPosicionEtiquetaEnPX(g_lbl_escribiendo, indiceEscritura);
