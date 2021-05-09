@@ -30,6 +30,8 @@ struct auxiliar_t{
     sem_t SEM_LLENO;	     	//semáforo de buffer lleno
     sem_t SEM_VACIO;		//semáforo de buffer vacío
     sem_t SEM_BUFFER;		//semáforo de acceso a buffer
+    sem_t SEM_BITACORA; //semáforo de acceso a la bitácora
+
     int PRODUCTORES;		//total de productores vivos
     int CONSUMIDORES;		//total de consumidores vivos
 
@@ -44,6 +46,7 @@ void sig_handler(int signum){
    if(signum == SIGUSR1){
        printf("Recibí la señal de creacion de consumidor. Ahora hay: %d vivos\n",auxptr->CONSUMIDORES );
        printf("LOG: %s\n", auxptr->mensaje_log);
+       sem_post(&auxptr->SEM_BITACORA);
    }
 }
 
@@ -52,11 +55,13 @@ void sig_handler_P(int signum){
    if(signum == SIGUSR2){
        printf("Recibí la señal de creacion de productor. Ahora hay: %d vivos\n",auxptr->PRODUCTORES);
        printf("LOG: %s\n", auxptr->mensaje_log);
+       sem_post(&auxptr->SEM_BITACORA);
    }
 }
 
 void sig_handlerLog(int signum){
    printf("LOG: %s\n", auxptr->mensaje_log);
+   sem_post(&auxptr->SEM_BITACORA);
 }
 
 
@@ -65,6 +70,7 @@ void sig_handlerBuff(int signum){
    if(signum == SIGALRM){
        printf("Buffer leido: INDEX_LECTURA: %d, INDEX_ESCRITURA: %d",auxptr->index_lectura, auxptr->index_escritura );
        printf("LOG: %s\n", auxptr->mensaje_log);
+       sem_post(&auxptr->SEM_BITACORA);
    }
 }
 
@@ -147,6 +153,7 @@ int main(int argc, char** argv){
     sem_init(&auxptr->SEM_CONSUMIDORES, 1, 1);
     sem_init(&auxptr->SEM_PRODUCTORES, 1, 1);
     sem_init(&auxptr->SEM_FINALIZADOR, 1, 0);
+    sem_init(&auxptr->SEM_BITACORA, 1, 1);
 
 
     sem_init(&auxptr->SEM_LLENO, 1, 0);

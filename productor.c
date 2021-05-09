@@ -32,6 +32,7 @@ struct auxiliar_t{
     sem_t SEM_LLENO;	     	//semáforo de buffer lleno
     sem_t SEM_VACIO;		//semáforo de buffer vacío
     sem_t SEM_BUFFER;		//semáforo de acceso a buffer
+    sem_t SEM_BITACORA; //semáforo de acceso a la bitácora
 
     int PRODUCTORES;		//total de productores vivos
     int CONSUMIDORES;		//total de consumidores vivos
@@ -152,7 +153,7 @@ int main(int argc, char **argv)
 
   auxptr->PRODUCTORES++;
   sem_post(&auxptr->SEM_PRODUCTORES);
-
+  sem_wait(&auxptr->SEM_BITACORA);
   sprintf(msgBitacora, "El productor (%d) fue creado", pid);
   strcpy(&auxptr->mensaje_log[0], msgBitacora);
   kill(pidCreator, SIGUSR2);
@@ -164,17 +165,20 @@ int main(int argc, char **argv)
     //Dormir
     double sleepTime = ran_expo(media);
     tiempoEspera = clock();
+    sem_wait(&auxptr->SEM_BITACORA);
     sprintf(msgBitacora, "El productor (%d) va a dormir", pid);
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
     kill(pidCreator, SIGVTALRM );
     sleep(sleepTime);
     tiempoEspera = clock() - tiempoEspera;
     contadorTiempoEspera += ((double)tiempoEspera)/CLOCKS_PER_SEC + sleepTime;
+    sem_wait(&auxptr->SEM_BITACORA);
     sprintf(msgBitacora, "El productor (%d) se despertó", pid);
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
     kill(pidCreator, SIGVTALRM );
 
     //Semaforo Vacio
+    sem_wait(&auxptr->SEM_BITACORA);
     sprintf(msgBitacora, "El productor (%d) va a pedir el semáforo de vacío", pid);
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
     kill(pidCreator, SIGVTALRM );
@@ -182,11 +186,13 @@ int main(int argc, char **argv)
     sem_wait(&auxptr->SEM_VACIO);
     tiempoBloqueado = clock() - tiempoBloqueado;
     contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC;
+    sem_wait(&auxptr->SEM_BITACORA);
     sprintf(msgBitacora, "El productor (%d) recibió el semáforo de lleno", pid);
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
     kill(pidCreator, SIGVTALRM );
 
     //Semaforo Buffer
+    sem_wait(&auxptr->SEM_BITACORA);
     sprintf(msgBitacora, "El productor (%d) va a pedir el semáforo del buffer", pid);
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
     kill(pidCreator, SIGVTALRM );
@@ -194,6 +200,7 @@ int main(int argc, char **argv)
     sem_wait(&auxptr->SEM_BUFFER);
     tiempoBloqueado = clock() - tiempoBloqueado;
     contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC;
+    sem_wait(&auxptr->SEM_BITACORA);
     sprintf(msgBitacora, "El productor (%d) recibió el semáforo del buffer", pid);
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
     kill(pidCreator, SIGVTALRM );
@@ -219,6 +226,7 @@ int main(int argc, char **argv)
     //Añadimos mensaje al buffer
     strcpy(bufptr[auxptr->index_escritura], mensaje);
 
+    sem_wait(&auxptr->SEM_BITACORA);
     sprintf(msgBitacora, "El productor (%d) escribió en el índice de escritura %d el mensaje: %s", pid, auxptr->index_escritura, mensaje);
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
 
@@ -229,11 +237,13 @@ int main(int argc, char **argv)
 
     kill(pidCreator, SIGALRM);
     sem_post(&auxptr->SEM_BUFFER);
+    sem_wait(&auxptr->SEM_BITACORA);
     sprintf(msgBitacora, "El productor (%d) liberó el semáforo del buffer", pid);
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
     kill(pidCreator, SIGVTALRM );
 
     sem_post(&auxptr->SEM_LLENO);
+    sem_wait(&auxptr->SEM_BITACORA);
     sprintf(msgBitacora, "El productor (%d) liberó el semáforo de lleno", pid);
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
     kill(pidCreator, SIGVTALRM );
@@ -252,9 +262,9 @@ int main(int argc, char **argv)
     auxptr->PRODUCTORES--;
     //Devolver el semaforo de contador de productores vivos
     sem_post(&auxptr->SEM_PRODUCTORES);
-
+    sem_wait(&auxptr->SEM_BITACORA);
     printf("Productor(%d) termina con %d mensajes, %f segundos esperando y %f segundos bloqueado.\n", pid, contadorMensajes, contadorTiempoEspera, contadorTiempoBloqueado);
-    sprintf(msgBitacora, "El consumidor (%d) murió", pid);
+    sprintf(msgBitacora, "El productor (%d) murió", pid);
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
     kill(pidCreator, SIGUSR2);
 

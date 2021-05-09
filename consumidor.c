@@ -31,8 +31,11 @@ struct auxiliar_t{
     sem_t SEM_LLENO;	     	//semáforo de buffer lleno
     sem_t SEM_VACIO;		//semáforo de buffer vacío
     sem_t SEM_BUFFER;		//semáforo de acceso a buffer
+    sem_t SEM_BITACORA; //semáforo de acceso a la bitácora
+    
     int PRODUCTORES;		//total de productores vivos
     int CONSUMIDORES;		//total de consumidores vivos
+
 
     char mensaje_log[LOGMAX];
 } ;
@@ -138,6 +141,7 @@ int main(int argc, char **argv)
     sem_post(&auxptr->SEM_CONSUMIDORES);
 
     char msgBitacora[LOGMAX];
+    sem_wait(&auxptr->SEM_BITACORA);
     sprintf(msgBitacora, "El consumidor (%d) fue creado", pid);
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
     kill(pidCreator, SIGUSR1);
@@ -148,6 +152,7 @@ int main(int argc, char **argv)
         double sleepTime = ran_expo(media);
         tiempoEspera = clock();
 
+        sem_wait(&auxptr->SEM_BITACORA);
         sprintf(msgBitacora, "El consumidor (%d) va a dormir", pid);
         strcpy(&auxptr->mensaje_log[0], msgBitacora);
         kill(pidCreator, SIGVTALRM);
@@ -156,11 +161,13 @@ int main(int argc, char **argv)
         tiempoEspera = clock() - tiempoEspera;
         contadorTiempoEspera += ((double)tiempoEspera)/CLOCKS_PER_SEC + sleepTime;
 
+        sem_wait(&auxptr->SEM_BITACORA);
         sprintf(msgBitacora, "El consumidor (%d) se despertó", pid);
         strcpy(&auxptr->mensaje_log[0], msgBitacora);
         kill(pidCreator, SIGVTALRM);
 
         //Semaforo Vacio
+        sem_wait(&auxptr->SEM_BITACORA);
         sprintf(msgBitacora, "El consumidor (%d) va a pedir el semáforo de lleno", pid);
         strcpy(&auxptr->mensaje_log[0], msgBitacora);
         kill(pidCreator, SIGVTALRM);
@@ -170,11 +177,13 @@ int main(int argc, char **argv)
         tiempoBloqueado = clock() - tiempoBloqueado;
         contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC;
 
+        sem_wait(&auxptr->SEM_BITACORA);
         sprintf(msgBitacora, "El consumidor (%d) recibió el semáforo de lleno", pid);
         strcpy(&auxptr->mensaje_log[0], msgBitacora);
         kill(pidCreator, SIGVTALRM);
 
         //Semaforo Buffer
+        sem_wait(&auxptr->SEM_BITACORA);
         sprintf(msgBitacora, "El consumidor (%d) va a pedir el semáforo del buffer", pid);
         strcpy(&auxptr->mensaje_log[0], msgBitacora);
         kill(pidCreator, SIGVTALRM);
@@ -184,14 +193,15 @@ int main(int argc, char **argv)
         tiempoBloqueado = clock() - tiempoBloqueado;
         contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC;
 
+        sem_wait(&auxptr->SEM_BITACORA);
         sprintf(msgBitacora, "El consumidor (%d) recibió el semáforo del buffer", pid);
         strcpy(&auxptr->mensaje_log[0], msgBitacora);
         kill(pidCreator, SIGVTALRM);
 
         //Leer mensaje
         char * mensaje = bufptr[auxptr->index_lectura];
-
-        sprintf(msgBitacora, "El consumidor (%d) leyó en el índice %d el mensaje: %s", pid, auxptr->index_lectura, mensaje);
+        sem_wait(&auxptr->SEM_BITACORA);
+        sprintf(msgBitacora, "El consumidor (%d) leyó en el í ndice %d el mensaje: %s", pid, auxptr->index_lectura, mensaje);
 
         //Aumentar indice de lectura circular
         auxptr->index_lectura = (auxptr->index_lectura + 1) % bufferSize;
@@ -204,11 +214,13 @@ int main(int argc, char **argv)
 
         //Devolver semaforo de buffer
         sem_post(&auxptr->SEM_BUFFER);
+        sem_wait(&auxptr->SEM_BITACORA);
         sprintf(msgBitacora, "El consumidor (%d) liberó el semáforo del buffer", pid);
         strcpy(&auxptr->mensaje_log[0], msgBitacora);
         kill(pidCreator, SIGVTALRM);
 
         sem_post(&auxptr->SEM_VACIO);
+        sem_wait(&auxptr->SEM_BITACORA);
         sprintf(msgBitacora, "El consumidor (%d) liberó el semáforo de vacio", pid);
         strcpy(&auxptr->mensaje_log[0], msgBitacora);
         kill(pidCreator, SIGVTALRM);
@@ -236,6 +248,7 @@ int main(int argc, char **argv)
 
             printf("Consumidor(%d) termina con %d mensajes, %f segundos esperando y %f segundos bloqueado.\n", pid, contadorMensajes, contadorTiempoEspera, contadorTiempoBloqueado);
 
+            sem_wait(&auxptr->SEM_BITACORA);
             sprintf(msgBitacora, "El consumidor (%d) murió", pid);
             strcpy(&auxptr->mensaje_log[0], msgBitacora);
             kill(pidCreator, SIGUSR1);
