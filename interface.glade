@@ -30,6 +30,46 @@
         <property name="margin_bottom">20</property>
         <property name="orientation">vertical</property>
         <child>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="halign">end</property>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <object class="GtkLabel" id="lbl_pid">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="halign">end</property>
+                <property name="label" translatable="yes">PID: </property>
+                <attributes>
+                  <attribute name="font-desc" value="Monospace Bold 12"/>
+                </attributes>
+                <style>
+                  <class name="pid"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
           <object class="GtkAccelLabel" id="lbl_nombreBuffer">
             <property name="name">lbl_nombreBuffer</property>
             <property name="visible">True</property>
@@ -44,7 +84,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">0</property>
+            <property name="position">2</property>
           </packing>
         </child>
         <child>
@@ -63,7 +103,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="halign">end</property>
-                    <property name="label" translatable="yes">Total productores activos:</property>
+                    <property name="label" translatable="yes">Total productores activos: </property>
                     <property name="justify">right</property>
                     <attributes>
                       <attribute name="font-desc" value="Sans 14"/>
@@ -94,7 +134,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="halign">end</property>
-                    <property name="label" translatable="yes">Total consumidores activos:</property>
+                    <property name="label" translatable="yes">Total consumidores activos: </property>
                     <property name="justify">right</property>
                     <attributes>
                       <attribute name="font-desc" value="Sans 14"/>
@@ -377,11 +417,8 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">1</property>
+            <property name="position">3</property>
           </packing>
-        </child>
-        <child>
-          <placeholder/>
         </child>
         <child>
           <object class="GtkGrid">
@@ -510,15 +547,27 @@
                 <property name="top_attach">3</property>
               </packing>
             </child>
+            <child>
+              <object class="GtkButton" id="btn_iniciar">
+                <property name="label" translatable="yes">INICIAR</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <signal name="clicked" handler="Algoritmo" swapped="yes"/>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">4</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">3</property>
+            <property name="position">4</property>
           </packing>
         </child>
       </object>
     </child>
   </object>
-  <object class="GtkTextBuffer" id="textbuffer2"/>
 </interface>
