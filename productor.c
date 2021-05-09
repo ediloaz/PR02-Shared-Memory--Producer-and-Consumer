@@ -17,7 +17,7 @@
 #define AUX "\auxiliar"
 
 //Para compilar
-//gcc consumidor.c -o consumidor -lm -lpthread -lrt
+//gcc productor.c -o productor -lm -lpthread -lrt
 
 struct auxiliar_t{
     int index_lectura;		//Índice de lectura
@@ -50,10 +50,6 @@ double contadorTiempoBloqueado = 0;
 int pid;
 clock_t tiempoEspera;
 clock_t tiempoBloqueado;
-pid_t pidCreator;
-
-int paramIndex = 1;
-int bufferSize = 10;
 
 
 
@@ -67,17 +63,12 @@ double ran_expo(double lambda)
 
 
 //Flag del productores
-int flag_productor = 0;
 //***Hay que usar memoria compartida para la bandera (?)***
-
-
-
-
 
 
 int main(int argc, char **argv)
 {
-  int flag_productor = 0;
+  int flag_productor = 1;
   pid = getpid();
   char nombreBuffer[NAMEMAX] = "nombreBuffer";
   int media = 3;
@@ -87,8 +78,10 @@ int main(int argc, char **argv)
 
   pid_t pidCreator;
 
+
   while(paramIndex < argc)
   {
+
     char* param = argv[paramIndex];
     paramIndex++;
 
@@ -115,57 +108,61 @@ int main(int argc, char **argv)
         }
     }
   }
+  printf("Inicio\n");
 
   char msgBitacora[LOGMAX];
-  while(flag_productor){
 
-
-    printf("Productor(%d) empieza.\n", getpid());
-
-    //=======Consigue direccion de memoria compartida=======
-    int len = sizeof(struct auxiliar_t);
-    int fd = shm_open(AUX, O_RDWR, 0600);
-    if(fd == -1){
-        printf("Fallo de shm_open\n");
-        return 1;
-    }
-    if(ftruncate(fd, len) == -1) {
-      printf("Error de ftruncate\n");
-        return 1;
-    }
-    struct auxiliar_t* auxptr = mmap(0, len, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-    if(auxptr == MAP_FAILED){
-      printf("Error de mmap\n");
-      return 1;
-    }
-    bufferSize  = auxptr->max_buffer;
-    printf("Tamaño de buffer: %d\n", auxptr->max_buffer);
-
-    int fd2 = shm_open(nombreBuffer, O_RDWR, 0600);
-    if(fd2 == -1){
+  //=======Consigue direccion de memoria compartida=======
+  int len = sizeof(struct auxiliar_t);
+  int fd = shm_open(AUX, O_RDWR, 0600);
+  if(fd == -1){
       printf("Fallo de shm_open\n");
       return 1;
-    }
-    if(ftruncate(fd2, ENTRYMAX * bufferSize) == -1) {
-      printf("Error de ftruncate\n");
-        return 1;
-    }
-    bufptr = mmap(0, ENTRYMAX * bufferSize, PROT_READ|PROT_WRITE, MAP_SHARED, fd2, 0);
+  }
+  if(ftruncate(fd, len) == -1) {
+    printf("Error de ftruncate\n");
+      return 1;
+  }
+  struct auxiliar_t* auxptr = mmap(0, len, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+  if(auxptr == MAP_FAILED){
+    printf("Error de mmap\n");
+    return 1;
+  }
+  bufferSize  = auxptr->max_buffer;
+  printf("Tamaño de buffer: %d\n", auxptr->max_buffer);
 
-    //=======Tiempo bloqueado=======
-    tiempoBloqueado = clock();
+  int fd2 = shm_open(nombreBuffer, O_RDWR, 0600);
+  if(fd2 == -1){
+    printf("Fallo de shm_open\n");
+    return 1;
+  }
+  if(ftruncate(fd2, ENTRYMAX * bufferSize) == -1) {
+    printf("Error de ftruncate\n");
+      return 1;
+  }
+  bufptr = mmap(0, ENTRYMAX * bufferSize, PROT_READ|PROT_WRITE, MAP_SHARED, fd2, 0);
 
-    //Pide semáforo de PRODUCTORES
-    sem_wait(&auxptr->SEM_PRODUCTORES);
-    tiempoBloqueado = clock() - tiempoBloqueado;
-    contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC;
+  //=======Tiempo bloqueado=======
+  tiempoBloqueado = clock();
 
-    auxptr->PRODUCTORES++;
-    sem_post(&auxptr->SEM_PRODUCTORES);
+  //Pide semáforo de PRODUCTORES
+  sem_wait(&auxptr->SEM_PRODUCTORES);
+  tiempoBloqueado = clock() - tiempoBloqueado;
+  contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC;
 
-    sprintf(msgBitacora, "El productor (%d) fue creado", pid);
-    strcpy(&auxptr->mensaje_log[0], msgBitacora);
-    kill(pidCreator, SIGUSR2);
+  auxptr->PRODUCTORES++;
+  sem_post(&auxptr->SEM_PRODUCTORES);
+
+  sprintf(msgBitacora, "El productor (%d) fue creado", pid);
+  strcpy(&auxptr->mensaje_log[0], msgBitacora);
+  kill(pidCreator, SIGUSR2);
+
+
+  while(flag_productor){
+
+    printf("Entró\n");
+
+    printf("Productor(%d) empieza.\n", getpid());
 
 
     //Dormir
@@ -173,37 +170,37 @@ int main(int argc, char **argv)
     tiempoEspera = clock();
     sprintf(msgBitacora, "El productor (%d) va a dormir", pid);
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
-    kill(pidCreator, SIGINT);
+    kill(pidCreator, SIGVTALRM );
     sleep(sleepTime);
     tiempoEspera = clock() - tiempoEspera;
     contadorTiempoEspera += ((double)tiempoEspera)/CLOCKS_PER_SEC + sleepTime;
     sprintf(msgBitacora, "El productor (%d) se despertó", pid);
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
-    kill(pidCreator, SIGINT);
+    kill(pidCreator, SIGVTALRM );
 
     //Semaforo Vacio
-    sprintf(msgBitacora, "El productor (%d) va a pedir el semáforo de lleno", pid);
+    sprintf(msgBitacora, "El productor (%d) va a pedir el semáforo de vacío", pid);
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
-    kill(pidCreator, SIGINT);
+    kill(pidCreator, SIGVTALRM );
     tiempoBloqueado = clock();
-    sem_wait(&auxptr->SEM_LLENO);
+    sem_wait(&auxptr->SEM_VACIO);
     tiempoBloqueado = clock() - tiempoBloqueado;
     contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC;
     sprintf(msgBitacora, "El productor (%d) recibió el semáforo de lleno", pid);
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
-    kill(pidCreator, SIGINT);
+    kill(pidCreator, SIGVTALRM );
 
     //Semaforo Buffer
     sprintf(msgBitacora, "El productor (%d) va a pedir el semáforo del buffer", pid);
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
-    kill(pidCreator, SIGINT);
+    kill(pidCreator, SIGVTALRM );
     tiempoBloqueado = clock();
     sem_wait(&auxptr->SEM_BUFFER);
     tiempoBloqueado = clock() - tiempoBloqueado;
     contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC;
     sprintf(msgBitacora, "El productor (%d) recibió el semáforo del buffer", pid);
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
-    kill(pidCreator, SIGINT);
+    kill(pidCreator, SIGVTALRM );
 
 
     //Generación de mensajes
@@ -225,13 +222,11 @@ int main(int argc, char **argv)
     //Añadimos mensaje al buffer
     strcpy(bufptr[auxptr->index_escritura], mensaje);
 
-    sprintf(msgBitacora, "El productor (%d) escribió en el índice %d el mensaje: %s", pid, auxptr->index_lectura, mensaje);
+    sprintf(msgBitacora, "El productor (%d) escribió en el índice de lectura %d el mensaje: %s", pid, auxptr->index_escritura, mensaje);
+    strcpy(&auxptr->mensaje_log[0], msgBitacora);
 
     //Aumentamos indice index_escritura
     auxptr->index_escritura = (auxptr->index_escritura + 1) % bufferSize;
-
-    strcpy(&auxptr->mensaje_log[0], msgBitacora);
-    kill(pidCreator, SIGALRM);
 
     //Devolver semáforos
 
@@ -239,12 +234,12 @@ int main(int argc, char **argv)
     sem_post(&auxptr->SEM_BUFFER);
     sprintf(msgBitacora, "El productor (%d) liberó el semáforo del buffer", pid);
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
-    kill(pidCreator, SIGINT);
+    kill(pidCreator, SIGVTALRM );
 
     sem_post(&auxptr->SEM_LLENO);
-    sprintf(msgBitacora, "El productor (%d) liberó el semáforo de vacio", pid);
+    sprintf(msgBitacora, "El productor (%d) liberó el semáforo de lleno", pid);
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
-    kill(pidCreator, SIGINT);
+    kill(pidCreator, SIGVTALRM );
 
     printf("Productor(%d) envió mensaje, con el indice de entrada: %d. Productores vivos: %d, consumidores vivos: %d.\n", pid, auxptr->index_escritura, auxptr->PRODUCTORES, auxptr->CONSUMIDORES);
 
@@ -258,7 +253,7 @@ int main(int argc, char **argv)
     tiempoBloqueado = clock() - tiempoBloqueado;
     contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC;
     //Decrementar el contador de productores vivos
-    auxptr->PRODUCTORES++;
+    auxptr->PRODUCTORES--;
     //Devolver el semaforo de contador de productores vivos
     sem_post(&auxptr->SEM_PRODUCTORES);
 

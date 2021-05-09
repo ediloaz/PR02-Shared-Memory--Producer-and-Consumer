@@ -16,22 +16,22 @@
 #define ENTRYMAX 64
 #define AUX "\auxiliar"
 
-//gcc consumidorDummy.c -o consumidor -lm -lpthread -lrt
+//gcc consumidor.c -o consumidor -lm -lpthread -lrt
 
-struct auxiliar_t{    
+struct auxiliar_t{
     int index_lectura;		//Índice de lectura
     int index_escritura;	//Índice de escritura
     int max_buffer;		//Tamaño máximo de capacidad del buffer
-    
+
     sem_t SEM_CONSUMIDORES; 	//semáforo de total de consumidores vivos
     sem_t SEM_PRODUCTORES; 	//semáforo de total de productores vivos
-    
+
     sem_t SEM_LLENO;	     	//semáforo de buffer lleno
     sem_t SEM_VACIO;		//semáforo de buffer vacío
-    sem_t SEM_BUFFER;		//semáforo de acceso a buffer    
+    sem_t SEM_BUFFER;		//semáforo de acceso a buffer
     int PRODUCTORES;		//total de productores vivos
     int CONSUMIDORES;		//total de consumidores vivos
-    
+
     char mensaje_log[LOGMAX];
 } ;
 
@@ -56,10 +56,10 @@ double ran_expo(double lambda)
 
 int main(int argc, char **argv)
 {
-    pid = getpid();  
+    pid = getpid();
     char nombreBuffer[NAMEMAX] = "nombreBuffer";
     int media = 3;
-    
+
     int paramIndex = 1;
     int bufferSize = 10;
 
@@ -69,7 +69,7 @@ int main(int argc, char **argv)
     {
     	char* param = argv[paramIndex];
     	paramIndex++;
-    	
+
     	if(param[0] == '-'){
     	    switch(param[1]){
     	    	case 'n':
@@ -91,7 +91,7 @@ int main(int argc, char **argv)
     	    	printf("Error: Parámetro no reconocido\n");
     	    	return 1;
     	    }
-    	}   	  	
+    	}
     }
     printf("Consumidor(%d) empieza.\n", pid);
 
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
         return 1;
     }
     if(ftruncate(fd, len) == -1) {
-    	printf("Error de ftruncate\n");        
+    	printf("Error de ftruncate\n");
         return 1;
     }
     struct auxiliar_t* auxptr = mmap(0, len, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
@@ -113,14 +113,14 @@ int main(int argc, char **argv)
     }
     bufferSize  = auxptr->max_buffer;
     printf("Tamaño de buffer: %d\n", auxptr->max_buffer);
-    
+
     int fd2 = shm_open(nombreBuffer, O_RDWR, 0600);
     if(fd2 == -1){
     	printf("Fallo de shm_open\n");
     	return 1;
     }
     if(ftruncate(fd2, ENTRYMAX * bufferSize) == -1) {
-    	printf("Error de ftruncate\n");        
+    	printf("Error de ftruncate\n");
         return 1;
     }
     bufptr = mmap(0, ENTRYMAX * bufferSize, PROT_READ|PROT_WRITE, MAP_SHARED, fd2, 0);
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
     //Pide semáforo de CONSUMIDORES
     sem_wait(&auxptr->SEM_CONSUMIDORES);
     tiempoBloqueado = clock() - tiempoBloqueado;
-    contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC; 
+    contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC;
     auxptr->CONSUMIDORES++;
     sem_post(&auxptr->SEM_CONSUMIDORES);
 
@@ -139,52 +139,52 @@ int main(int argc, char **argv)
     sprintf(msgBitacora, "El consumidor (%d) fue creado", pid);
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
     kill(pidCreator, SIGUSR1);
-    
+
     while(1)
     {
         //Dormir
         double sleepTime = ran_expo(media);
         tiempoEspera = clock();
-        
+
         sprintf(msgBitacora, "El consumidor (%d) va a dormir", pid);
         strcpy(&auxptr->mensaje_log[0], msgBitacora);
-        kill(pidCreator, SIGINT);
-        
+        kill(pidCreator, SIGVTALRM);
+
         sleep(sleepTime);
         tiempoEspera = clock() - tiempoEspera;
         contadorTiempoEspera += ((double)tiempoEspera)/CLOCKS_PER_SEC + sleepTime;
-        
+
         sprintf(msgBitacora, "El consumidor (%d) se despertó", pid);
         strcpy(&auxptr->mensaje_log[0], msgBitacora);
-        kill(pidCreator, SIGINT);
+        kill(pidCreator, SIGVTALRM);
 
         //Semaforo Vacio
         sprintf(msgBitacora, "El consumidor (%d) va a pedir el semáforo de lleno", pid);
         strcpy(&auxptr->mensaje_log[0], msgBitacora);
-        kill(pidCreator, SIGINT);
-        
+        kill(pidCreator, SIGVTALRM);
+
         tiempoBloqueado = clock();
         sem_wait(&auxptr->SEM_LLENO);
         tiempoBloqueado = clock() - tiempoBloqueado;
-        contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC; 
-        
+        contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC;
+
         sprintf(msgBitacora, "El consumidor (%d) recibió el semáforo de lleno", pid);
         strcpy(&auxptr->mensaje_log[0], msgBitacora);
-        kill(pidCreator, SIGINT);
+        kill(pidCreator, SIGVTALRM);
 
         //Semaforo Buffer
         sprintf(msgBitacora, "El consumidor (%d) va a pedir el semáforo del buffer", pid);
         strcpy(&auxptr->mensaje_log[0], msgBitacora);
-        kill(pidCreator, SIGINT);
-        
+        kill(pidCreator, SIGVTALRM);
+
         tiempoBloqueado = clock();
         sem_wait(&auxptr->SEM_BUFFER);
         tiempoBloqueado = clock() - tiempoBloqueado;
-        contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC; 
-        
+        contadorTiempoBloqueado += ((double)tiempoBloqueado)/CLOCKS_PER_SEC;
+
         sprintf(msgBitacora, "El consumidor (%d) recibió el semáforo del buffer", pid);
         strcpy(&auxptr->mensaje_log[0], msgBitacora);
-        kill(pidCreator, SIGINT);
+        kill(pidCreator, SIGVTALRM);
 
         //Leer mensaje
         char * mensaje = bufptr[auxptr->index_lectura];
@@ -204,17 +204,17 @@ int main(int argc, char **argv)
         sem_post(&auxptr->SEM_BUFFER);
         sprintf(msgBitacora, "El consumidor (%d) liberó el semáforo del buffer", pid);
         strcpy(&auxptr->mensaje_log[0], msgBitacora);
-        kill(pidCreator, SIGINT);
+        kill(pidCreator, SIGVTALRM);
 
         sem_post(&auxptr->SEM_VACIO);
         sprintf(msgBitacora, "El consumidor (%d) liberó el semáforo de vacio", pid);
         strcpy(&auxptr->mensaje_log[0], msgBitacora);
-        kill(pidCreator, SIGINT);
+        kill(pidCreator, SIGVTALRM);
 
 	    printf("MSG: %s", mensaje);
-	
+
         printf("Consumidor(%d) lee mensaje, con el indice de entrada: %d. Productores vivos: %d, consumidores vivos: %d.\n", pid, auxptr->index_lectura, auxptr->PRODUCTORES, auxptr->CONSUMIDORES);
-        
+
         contadorMensajes++;
 
         int llave = mensaje[7] - '0';
