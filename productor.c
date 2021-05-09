@@ -23,9 +23,11 @@ struct auxiliar_t{
     int index_lectura;		//Índice de lectura
     int index_escritura;	//Índice de escritura
     int max_buffer;		//Tamaño máximo de capacidad del buffer
+    int flag_productor; //Flag del productor
 
     sem_t SEM_CONSUMIDORES; 	//semáforo de total de consumidores vivos
     sem_t SEM_PRODUCTORES; 	//semáforo de total de productores vivos
+    sem_t SEM_FINALIZADOR;  //semáforo del finalizador
 
     sem_t SEM_LLENO;	     	//semáforo de buffer lleno
     sem_t SEM_VACIO;		//semáforo de buffer vacío
@@ -68,7 +70,6 @@ double ran_expo(double lambda)
 
 int main(int argc, char **argv)
 {
-  int flag_productor = 1;
   pid = getpid();
   char nombreBuffer[NAMEMAX] = "nombreBuffer";
   int media = 3;
@@ -92,7 +93,7 @@ int main(int argc, char **argv)
           printf("Nombre: %s\n", nombreBuffer);
           paramIndex++;
           break;
-        case 'm':
+          case 'm':
           media = atoi(argv[paramIndex]);
           printf("Media: %d\n", media);
           paramIndex++;
@@ -108,7 +109,6 @@ int main(int argc, char **argv)
         }
     }
   }
-  printf("Inicio\n");
 
   char msgBitacora[LOGMAX];
 
@@ -157,13 +157,9 @@ int main(int argc, char **argv)
   strcpy(&auxptr->mensaje_log[0], msgBitacora);
   kill(pidCreator, SIGUSR2);
 
+  printf("Productor(%d) empieza.\n", getpid());
 
-  while(flag_productor){
-
-    printf("Entró\n");
-
-    printf("Productor(%d) empieza.\n", getpid());
-
+  while(auxptr->flag_productor){
 
     //Dormir
     double sleepTime = ran_expo(media);
@@ -212,17 +208,18 @@ int main(int argc, char **argv)
     time(&t);
     //Creamos el mensaje
     char mensaje[64];
-    sprintf(mensaje,"%s", "Llave: ");
-    sprintf(mensaje, "%d", llave);
-    sprintf(mensaje,"%s", "Identificador: ");
-    sprintf(mensaje, "%d", pid);
-    sprintf(mensaje, "%s", "Tiempo: ");
-    sprintf(mensaje, "%s", ctime(&t));
+    int pos = 0;
+    pos += sprintf(&mensaje[pos],"%s", "Llave: ");
+    pos += sprintf(&mensaje[pos], "%d", llave);
+    pos += sprintf(&mensaje[pos],"%s", " Identificador: ");
+    pos += sprintf(&mensaje[pos], "%d", pid);
+    pos += sprintf(&mensaje[pos], "%s", " Tiempo: ");
+    pos += sprintf(&mensaje[pos], "%s", ctime(&t));
 
     //Añadimos mensaje al buffer
     strcpy(bufptr[auxptr->index_escritura], mensaje);
 
-    sprintf(msgBitacora, "El productor (%d) escribió en el índice de lectura %d el mensaje: %s", pid, auxptr->index_escritura, mensaje);
+    sprintf(msgBitacora, "El productor (%d) escribió en el índice de escritura %d el mensaje: %s", pid, auxptr->index_escritura, mensaje);
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
 
     //Aumentamos indice index_escritura
@@ -247,7 +244,6 @@ int main(int argc, char **argv)
 
   }
 
-  if (!flag_productor) {
     tiempoBloqueado = clock();
     sem_wait(&auxptr->SEM_PRODUCTORES);
     tiempoBloqueado = clock() - tiempoBloqueado;
@@ -260,10 +256,10 @@ int main(int argc, char **argv)
     printf("Productor(%d) termina con %d mensajes, %f segundos esperando y %f segundos bloqueado.\n", pid, contadorMensajes, contadorTiempoEspera, contadorTiempoBloqueado);
     sprintf(msgBitacora, "El consumidor (%d) murió", pid);
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
-    kill(pidCreator, SIGUSR1);
+    kill(pidCreator, SIGUSR2);
 
     return 0;
-  }
+
 //productor(nombreBuffer,media);
 
 }

@@ -146,7 +146,7 @@ int main(int argc, char** argv){
 
     sem_init(&auxptr->SEM_CONSUMIDORES, 1, 1);
     sem_init(&auxptr->SEM_PRODUCTORES, 1, 1);
-    sem_init(&auxptr->SEM_FINALIZADOR, 1, 1);
+    sem_init(&auxptr->SEM_FINALIZADOR, 1, 0);
 
 
     sem_init(&auxptr->SEM_LLENO, 1, 0);

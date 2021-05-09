@@ -22,9 +22,11 @@ struct auxiliar_t{
     int index_lectura;		//Índice de lectura
     int index_escritura;	//Índice de escritura
     int max_buffer;		//Tamaño máximo de capacidad del buffer
+    int flag_productor; //Flag del productor
 
     sem_t SEM_CONSUMIDORES; 	//semáforo de total de consumidores vivos
     sem_t SEM_PRODUCTORES; 	//semáforo de total de productores vivos
+    sem_t SEM_FINALIZADOR;  //semáforo del finalizador
 
     sem_t SEM_LLENO;	     	//semáforo de buffer lleno
     sem_t SEM_VACIO;		//semáforo de buffer vacío
@@ -192,7 +194,7 @@ int main(int argc, char **argv)
         sprintf(msgBitacora, "El consumidor (%d) leyó en el índice %d el mensaje: %s", pid, auxptr->index_lectura, mensaje);
 
         //Aumentar indice de lectura circular
-        auxptr->index_lectura = auxptr->index_lectura + 1 % bufferSize;
+        auxptr->index_lectura = (auxptr->index_lectura + 1) % bufferSize;
 
         //Borrar el mensaje
         strcpy(bufptr[auxptr->index_lectura], "");
@@ -219,7 +221,8 @@ int main(int argc, char **argv)
 
         int llave = mensaje[7] - '0';
 
-        if (llave == 5 || pid % 5 == llave)
+        //if (llave == 5 || pid % 5 == llave)
+        if (llave == 5 )
         {
             tiempoBloqueado = clock();
             sem_wait(&auxptr->SEM_CONSUMIDORES);
@@ -236,6 +239,10 @@ int main(int argc, char **argv)
             sprintf(msgBitacora, "El consumidor (%d) murió", pid);
             strcpy(&auxptr->mensaje_log[0], msgBitacora);
             kill(pidCreator, SIGUSR1);
+
+            //Avisa al finalizador
+            sem_post(&auxptr->SEM_FINALIZADOR);
+
 
             return 0;
         }
