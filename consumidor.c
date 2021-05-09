@@ -211,20 +211,13 @@ int main(int argc, char **argv)
         strcpy(&auxptr->mensaje_log[0], msgBitacora);
         kill(pidCreator, SIGINT);
 
-	printf("Hola");
-	printf("MSG: %s", mensaje);
+	    printf("MSG: %s", mensaje);
 	
         printf("Consumidor(%d) lee mensaje, con el indice de entrada: %d. Productores vivos: %d, consumidores vivos: %d.\n", pid, auxptr->index_lectura, auxptr->PRODUCTORES, auxptr->CONSUMIDORES);
         
-        printf("Hola");
-
         contadorMensajes++;
-        printf("Hola");
-		
-        int llave = mensaje[8] - '0';
-        printf("Hola");
-        printf("Llave: %d", llave);
-        printf("Hola");
+
+        int llave = mensaje[7] - '0';
 
         if (llave == 5 || pid % 5 == llave)
         {
