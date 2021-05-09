@@ -27,8 +27,13 @@ GtkWidget *g_entry_lectura;
 // Constantes para usar en bitácora
 const int bitacora_lineasInicialesEscritas = 0;
 const int bitacora_lineasUsadasPorEscritura = 3;
+const int buffer_porcentajeParaCambiarEtiqueta = 30;
 
 int tamanoTotalBuffer = 9500;       // POR MIENTRAS ES QUEMADO, SE DEBE LEER DE LOS PARÁMETROS
+
+
+
+
 
 /* 
     FUNCIONES ÚTILES
@@ -51,9 +56,20 @@ int getAnchoWidget(GtkWidget * widget){
 
 
 
+
 /*
     BUFFER
 */
+
+bool _cambioEtiquetaDeLado(GtkWidget * widget, int indiceActual){
+    if ((int)(indiceActual*100/tamanoTotalBuffer) > buffer_porcentajeParaCambiarEtiqueta){
+        printf("Entró\n");
+        return true;
+    }else{
+        printf("Salté\n");
+        return false;
+    }
+}
 
 // Calcula la posición de las etiquetas de "Leyendo" y "Escribiendo".
 // Esta función usa las constantes del tamaño del ancho de:
@@ -62,6 +78,9 @@ int getAnchoWidget(GtkWidget * widget){
 int _calcularPosicionEtiquetaEnPX(GtkWidget * widget, int indiceActual){
     int anchoTotal = getAnchoWidget(g_contenedorBuffer);
     int pos = (int)(anchoTotal * indiceActual / tamanoTotalBuffer);
+    if (_cambioEtiquetaDeLado(widget, indiceActual)){
+        pos = pos - getAnchoWidget(widget);
+    }
     return pos;
 }
 
@@ -74,7 +93,7 @@ void ActualizarIndiceLectura(int indiceLectura){
     int pos = _calcularPosicionEtiquetaEnPX(g_lbl_leyendo, indiceLectura);
     gtk_widget_set_margin_start(g_lbl_leyendo, pos);
     char stringLabel[40];
-    sprintf(stringLabel, "▲ Leyendo (pos: %d)", indiceLectura);
+    sprintf(stringLabel, _cambioEtiquetaDeLado(g_lbl_leyendo, indiceLectura) ? " Leyendo (pos: %d) ▲" : "▲ Leyendo (pos: %d)", indiceLectura);
     gtk_label_set_text(GTK_LABEL(g_lbl_leyendo), stringLabel);
 }
 
@@ -87,7 +106,7 @@ void ActualizarIndiceEscritura(int indiceEscritura){
     int pos = _calcularPosicionEtiquetaEnPX(g_lbl_escribiendo, indiceEscritura);
     gtk_widget_set_margin_start(g_lbl_escribiendo, pos);
     char stringLabel[40];
-    sprintf(stringLabel, "▼ Escribiendo (pos: %d)", indiceEscritura);
+    sprintf(stringLabel, _cambioEtiquetaDeLado(g_lbl_escribiendo, indiceEscritura) ? " Escribiendo (pos: %d) ▼" : "▼ Escribiendo (pos: %d)", indiceEscritura);
     gtk_label_set_text(GTK_LABEL(g_lbl_escribiendo), stringLabel);
 }
 
