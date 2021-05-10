@@ -95,7 +95,7 @@ void sig_handler_P(int signum){
 
 void sig_handlerLog(int signum){
    printf("LOG: %s\n", auxptr->mensaje_log);
-   if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
+//    if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
    sem_post(&auxptr->SEM_BITACORA);
 }
 
@@ -106,7 +106,7 @@ void sig_handlerBuff(int signum){
        printf("Buffer leido: INDEX_LECTURA: %d, INDEX_ESCRITURA: %d",auxptr->index_lectura, auxptr->index_escritura );
        if (USAR_INTERFAZ) ActualizarIndices(auxptr->index_escritura , auxptr->index_lectura);
        printf("LOG: %s\n", auxptr->mensaje_log);
-       if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
+    //    if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
        sem_post(&auxptr->SEM_BITACORA);
    }
 }
@@ -375,9 +375,9 @@ void ActualizarIndiceEscritura(int indiceEscritura){
 }
 
 void ActualizarIndices(int indiceEscritura, int indiceLectura){
-    ActualizarIndiceEscritura(indiceEscritura);
-    ActualizarIndiceLectura(indiceLectura);
-    RefrescarInterfaz();
+    // ActualizarIndiceEscritura(indiceEscritura);
+    // ActualizarIndiceLectura(indiceLectura);
+    // RefrescarInterfaz();
 }
 
 
@@ -412,13 +412,13 @@ void TestearLeerBuffer(){
     BITÁCORA
 */
 void EscribirEnBitacora(char *texto){
-    RefrescarInterfaz();
+    // RefrescarInterfaz();
     gint lineaSiguiente = gtk_text_buffer_get_line_count (g_buffer_bitacora)/bitacora_lineasUsadasPorEscritura - bitacora_lineasInicialesEscritas;
     char strLineaSiguiente[6];
     sprintf(strLineaSiguiente, "%d", lineaSiguiente);
     gchar *textoParaEscribir = g_strjoin("", " > [", strLineaSiguiente, "]:\n   ", texto, "\n\n",  NULL);
     gtk_text_buffer_insert_at_cursor(g_buffer_bitacora, textoParaEscribir, -1);
-    RefrescarInterfaz();
+    // RefrescarInterfaz();
 }
 
 void MensajeInicialBitacora(){
@@ -451,14 +451,14 @@ void _RenderizarCantidadProductoresOConsumidoresActivos(int cantidad, bool esPro
 void RenderizarCantidadProductoresActivos(int cantidad)
 {
     _RenderizarCantidadProductoresOConsumidoresActivos(cantidad, true);
-    RefrescarInterfaz();
+    // RefrescarInterfaz();
 }
 
 // Llamar esta función para RENDERIZAR/PINTAR el número de CONSUMIDORES en la pantalla
 void RenderizarCantidadConsumidoresActivos(int cantidad)
 {
     _RenderizarCantidadProductoresOConsumidoresActivos(cantidad, false);
-    RefrescarInterfaz();
+    // RefrescarInterfaz();
 }
 
 
@@ -480,8 +480,8 @@ void DefinirNombreBuffer(){
 void RefrescarInterfaz(){
     // while (gtk_events_pending ())
     // g_main_context_pending(NULL) and g_main_context_iteration(NULL,FALSE)
-    while ( g_main_context_pending(NULL) )
-        gtk_main_iteration ();
+    // while ( g_main_context_pending(NULL) )
+    //     gtk_main_iteration ();
 }
 
 // Creación de la interfaz
