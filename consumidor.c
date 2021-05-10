@@ -210,7 +210,7 @@ int main(int argc, char **argv)
         strcpy(bufptr[auxptr->index_lectura], "");
 
         strcpy(&auxptr->mensaje_log[0], msgBitacora);
-        kill(pidCreator, SIGALRM);
+        kill(pidCreator, SIGCHLD);
 
         //Devolver semaforo de buffer
         sem_post(&auxptr->SEM_BUFFER);

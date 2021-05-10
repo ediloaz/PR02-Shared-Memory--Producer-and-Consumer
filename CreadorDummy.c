@@ -120,7 +120,7 @@ void sig_handlerLog(int signum){
 
 void sig_handlerBuff(int signum){
     printf("\n sig_handlerBuff \n");
-    if(signum == SIGALRM){
+    if(signum == SIGCHLD){
         printf("\n\t> Línea %d \n ",  __LINE__); 
         printf("Buffer leido: INDEX_LECTURA: %d, INDEX_ESCRITURA: %d",auxptr->index_lectura, auxptr->index_escritura );
         printf("\n\t> Línea %d \n ",  __LINE__); 
@@ -146,7 +146,7 @@ void Algoritmo(){
     signal(SIGUSR1, sig_handler);
     signal(SIGUSR2, sig_handler_P);
     signal(SIGVTALRM, sig_handlerLog);
-    signal(SIGALRM, sig_handlerBuff);
+    signal(SIGCHLD, sig_handlerBuff);
 
 
     struct buffer_t{
