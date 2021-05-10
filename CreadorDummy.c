@@ -27,6 +27,10 @@ gcc CreadorDummy.c -o creador -lpthread -lrt -lm -Wall `pkg-config --cflags --li
 */
 
 
+// Para usar la interfaz
+const bool USAR_INTERFAZ = true;
+
+
 // Funciones de interfaz llamadas antes de su creación
 void RefrescarInterfaz();
 void EscribirEnBitacora();
@@ -34,6 +38,7 @@ void RenderizarCantidadConsumidoresActivos();
 void RenderizarCantidadProductoresActivos();
 void ActualizarIndices();
 void IniciarInterfaz();
+void MensajeInicialBitacora();
 
 
 //LECTURA DE PARÁMETROS
@@ -70,9 +75,9 @@ void sig_handler(int signum){
 
    if(signum == SIGUSR1){
        printf("Recibí la señal de creacion de consumidor. Ahora hay: %d vivos\n",auxptr->CONSUMIDORES );
-       RenderizarCantidadConsumidoresActivos(auxptr->CONSUMIDORES);
+       if (USAR_INTERFAZ) RenderizarCantidadConsumidoresActivos(auxptr->CONSUMIDORES);
        printf("LOG: %s\n", auxptr->mensaje_log);
-       EscribirEnBitacora(auxptr->mensaje_log);
+       if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
        sem_post(&auxptr->SEM_BITACORA);
    }
 }
@@ -81,16 +86,16 @@ void sig_handler_P(int signum){
 
    if(signum == SIGUSR2){
        printf("Recibí la señal de creacion de productor. Ahora hay: %d vivos\n",auxptr->PRODUCTORES);
-       RenderizarCantidadProductoresActivos(auxptr->PRODUCTORES);
+       if (USAR_INTERFAZ) RenderizarCantidadProductoresActivos(auxptr->PRODUCTORES);
        printf("LOG: %s\n", auxptr->mensaje_log);
-       EscribirEnBitacora(auxptr->mensaje_log);
+       if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
        sem_post(&auxptr->SEM_BITACORA);
    }
 }
 
 void sig_handlerLog(int signum){
    printf("LOG: %s\n", auxptr->mensaje_log);
-   EscribirEnBitacora(auxptr->mensaje_log);
+   if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
    sem_post(&auxptr->SEM_BITACORA);
 }
 
@@ -99,24 +104,20 @@ void sig_handlerBuff(int signum){
 
    if(signum == SIGALRM){
        printf("Buffer leido: INDEX_LECTURA: %d, INDEX_ESCRITURA: %d",auxptr->index_lectura, auxptr->index_escritura );
-       ActualizarIndices(auxptr->index_escritura , auxptr->index_lectura);
+       if (USAR_INTERFAZ) ActualizarIndices(auxptr->index_escritura , auxptr->index_lectura);
        printf("LOG: %s\n", auxptr->mensaje_log);
-       EscribirEnBitacora(auxptr->mensaje_log);
+       if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
        sem_post(&auxptr->SEM_BITACORA);
    }
 }
 
-void MensajeInicialBitacora(int pid){
-    char stringValue[100];
-    sprintf(stringValue, "Mensaje inicial de Bitácora: El PID es  %d \n", pid);
-    EscribirEnBitacora(stringValue);
-}
+
 
 void Algoritmo(){
 
     pid_t pid = getpid();
     printf("Mi PID es: %d\n", pid);
-    MensajeInicialBitacora(pid);
+    if (USAR_INTERFAZ) MensajeInicialBitacora();
 
     signal(SIGUSR1, sig_handler);
     signal(SIGUSR2, sig_handler_P);
@@ -177,9 +178,12 @@ void Algoritmo(){
     //printf("Largo: %ld\n", sizeof(bufptr));
     printf("Memoria compartida creada correctamente\n");
     //Ciclo infinito para mantenerlo vivo
-    // for(int i=1;;i++){
-    //   sleep(1);
-    // }
+
+    if (!USAR_INTERFAZ){
+        for(int i=1;;i++){
+        sleep(1);
+        }
+    }
 
 }
 
@@ -212,7 +216,8 @@ int main(int argc, char** argv){
 
     // Inicia la Interfaz
     // Esta tiene un botón para iniciar la función Algoritmo()
-    IniciarInterfaz(argc, argv);
+    
+    USAR_INTERFAZ ? IniciarInterfaz(argc, argv) : Algoritmo();
 
     return 0;
 }
@@ -416,6 +421,12 @@ void EscribirEnBitacora(char *texto){
     RefrescarInterfaz();
 }
 
+void MensajeInicialBitacora(){
+    char stringValue[100];
+    sprintf(stringValue, "Mensaje inicial de Bitácora: El PID es  %d \n", getpid());
+    if (USAR_INTERFAZ) EscribirEnBitacora(stringValue);
+}
+
 void IniciarBitacora(){
     gchar *text = "\n";
     gtk_text_buffer_set_text (g_buffer_bitacora, text, -1);
@@ -523,11 +534,10 @@ void IniciarInterfaz(int argc, char *argv[])
 
 
 // Se llama cuando la interfaz es cerrada
-void on_window_main_destroy(int codigoParaRetornar)
+void on_window_main_destroy()
 {
-    printf("valos");
     gtk_main_quit();
-    exit(codigoParaRetornar);
+    exit(0);
 }
 
 
