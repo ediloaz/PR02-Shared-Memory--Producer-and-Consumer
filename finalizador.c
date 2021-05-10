@@ -191,7 +191,7 @@ int main(int argc, char **argv)
 
     //Devolver semáforos
 
-    kill(pidCreator, SIGALRM);
+    kill(pidCreator, SIGCHLD);
     sem_post(&auxptr->SEM_BUFFER);
     sem_wait(&auxptr->SEM_BITACORA);
     sprintf(msgBitacora, "El finalizador (%d) liberó el semáforo del buffer", pid);
