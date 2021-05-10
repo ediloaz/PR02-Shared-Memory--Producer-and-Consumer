@@ -233,8 +233,7 @@ int main(int argc, char **argv)
 
         int llave = mensaje[7] - '0';
 
-        //if (llave == 5 || pid % 5 == llave)
-        if (llave == 5 )
+        if (llave == 5 || pid % 5 == llave)
         {
             tiempoBloqueado = clock();
             sem_wait(&auxptr->SEM_CONSUMIDORES);
