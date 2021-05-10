@@ -21,7 +21,7 @@
 
 /*
 
--> Para complicar con la interfaz:
+-> Para compilar con la interfaz:
 gcc CreadorDummy.c -o creador -lpthread -lrt -lm -Wall `pkg-config --cflags --libs gtk+-3.0` -export-dynamic 
 
 */
@@ -72,43 +72,67 @@ struct auxiliar_t{
 struct auxiliar_t* auxptr;
 
 void sig_handler(int signum){
-
-   if(signum == SIGUSR1){
-       printf("Recibí la señal de creacion de consumidor. Ahora hay: %d vivos\n",auxptr->CONSUMIDORES );
-       if (USAR_INTERFAZ) RenderizarCantidadConsumidoresActivos(auxptr->CONSUMIDORES);
-       printf("LOG: %s\n", auxptr->mensaje_log);
-       if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
-       sem_post(&auxptr->SEM_BITACORA);
-   }
+    printf("\n sig_handler \n "); 
+    if(signum == SIGUSR1){
+        printf("\n\t> Línea %d \n ",  __LINE__); 
+        printf("Recibí la señal de creacion de consumidor. Ahora hay: %d vivos\n",auxptr->CONSUMIDORES );
+        printf("\n\t> Línea %d \n ",  __LINE__); 
+        if (USAR_INTERFAZ) RenderizarCantidadConsumidoresActivos(auxptr->CONSUMIDORES);
+        printf("\n\t> Línea %d \n ",  __LINE__); 
+        printf("LOG: %s\n", auxptr->mensaje_log);
+        printf("\n\t> Línea %d \n ",  __LINE__); 
+        if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
+        printf("\n\t> Línea %d \n ",  __LINE__); 
+        sem_post(&auxptr->SEM_BITACORA);
+        printf("\n\t> Línea %d \n ",  __LINE__); 
+    }
 }
 
 void sig_handler_P(int signum){
-
-   if(signum == SIGUSR2){
-       printf("Recibí la señal de creacion de productor. Ahora hay: %d vivos\n",auxptr->PRODUCTORES);
-       if (USAR_INTERFAZ) RenderizarCantidadProductoresActivos(auxptr->PRODUCTORES);
-       printf("LOG: %s\n", auxptr->mensaje_log);
-       if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
-       sem_post(&auxptr->SEM_BITACORA);
-   }
+    printf("\n sig_handler_P \n "); 
+    if(signum == SIGUSR2){
+        printf("\n\t> Línea %d \n ",  __LINE__); 
+        printf("Recibí la señal de creacion de productor. Ahora hay: %d vivos\n",auxptr->PRODUCTORES);
+        printf("\n\t> Línea %d \n ",  __LINE__); 
+        if (USAR_INTERFAZ) RenderizarCantidadProductoresActivos(auxptr->PRODUCTORES);
+        printf("\n\t> Línea %d \n ",  __LINE__); 
+        printf("LOG: %s\n", auxptr->mensaje_log);
+        printf("\n\t> Línea %d \n ",  __LINE__); 
+        if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
+        printf("\n\t> Línea %d \n ",  __LINE__); 
+        sem_post(&auxptr->SEM_BITACORA);
+        printf("\n\t> Línea %d \n ",  __LINE__); 
+    }
 }
 
 void sig_handlerLog(int signum){
-   printf("LOG: %s\n", auxptr->mensaje_log);
-   if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
-   sem_post(&auxptr->SEM_BITACORA);
+    printf("\n sig_handlerLog \n "); 
+
+    printf("\n\t> Línea %d \n ",  __LINE__); 
+    printf("LOG: %s\n", auxptr->mensaje_log);
+    printf("\n\t> Línea %d \n ",  __LINE__); 
+    if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
+    printf("\n\t> Línea %d \n ",  __LINE__); 
+    sem_post(&auxptr->SEM_BITACORA);
+    printf("\n\t> Línea %d \n ",  __LINE__); 
 }
 
 
 void sig_handlerBuff(int signum){
-
-   if(signum == SIGALRM){
-       printf("Buffer leido: INDEX_LECTURA: %d, INDEX_ESCRITURA: %d",auxptr->index_lectura, auxptr->index_escritura );
-       if (USAR_INTERFAZ) ActualizarIndices(auxptr->index_escritura , auxptr->index_lectura);
-       printf("LOG: %s\n", auxptr->mensaje_log);
-       if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
-       sem_post(&auxptr->SEM_BITACORA);
-   }
+    printf("\n sig_handlerBuff \n");
+    if(signum == SIGALRM){
+        printf("\n\t> Línea %d \n ",  __LINE__); 
+        printf("Buffer leido: INDEX_LECTURA: %d, INDEX_ESCRITURA: %d",auxptr->index_lectura, auxptr->index_escritura );
+        printf("\n\t> Línea %d \n ",  __LINE__); 
+        if (USAR_INTERFAZ) ActualizarIndices();
+        printf("\n\t> Línea %d \n ",  __LINE__); 
+        printf("LOG: %s\n", auxptr->mensaje_log);
+        printf("\n\t> Línea %d \n ",  __LINE__); 
+        if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
+        printf("\n\t> Línea %d \n ",  __LINE__); 
+        sem_post(&auxptr->SEM_BITACORA);
+        printf("\n\t> Línea %d \n ",  __LINE__); 
+    }
 }
 
 
@@ -184,11 +208,11 @@ void Algoritmo(){
         sleep(1);
         }
     }
-
 }
 
-int main(int argc, char** argv){
 
+int main(int argc, char** argv){
+    printf("\n\t> Línea %d \n ",  __LINE__);
     // Lee los parámetros y guarda en variables globales
     while(paramIndex < argc)
     {
@@ -213,10 +237,9 @@ int main(int argc, char** argv){
     	    }
     	}
     }
+    printf("\n\t> Línea %d \n ",  __LINE__);
 
-    // Inicia la Interfaz
-    // Esta tiene un botón para iniciar la función Algoritmo()
-    
+    // La Interfaz tiene un botón para llamar a la función Algoritmo()
     USAR_INTERFAZ ? IniciarInterfaz(argc, argv) : Algoritmo();
 
     return 0;
@@ -318,19 +341,32 @@ bool _cambioEtiquetaDeLado(GtkWidget * widget, int indiceActual){
     }
 }
 
-// Calcula la posición de las etiquetas de "Leyendo" y "Escribiendo".; /
+// Calcula la cantidad de llenado del buffer, es un porcentaje del 0.0 al 1.0
 float _calcularLlenadoBufferGraficoEnPorcentaje(int indiceActual){
-    float porcentaje = 1.0 * indiceActual / buff_size;
-    return porcentaje;
+    printf("\n indiceActual: %d", indiceActual);
+    printf("\n buff_size: %d", buff_size);
+    if (indiceActual==0){
+        indiceActual = 1;
+        printf("\n indiceActual modif: %d", indiceActual);
+    }else{
+        printf("\n all good");
+    }
+    int porcentaje = 100 * indiceActual / buff_size;
+    
+    printf("\n porcentaje: "); 
+    PrintInt(porcentaje);
+    
+    return 0.5;
 }
 // Calcula la posición de las etiquetas de "Leyendo" y "Escribiendo".
 int _calcularPosicionEtiquetaEnPX(GtkWidget * widget, int indiceActual){
-    int anchoTotal = getAnchoWidget(g_contenedorBuffer);
-    int pos = (int)(anchoTotal * indiceActual / buff_size);
-    if (_cambioEtiquetaDeLado(widget, indiceActual)){
-        pos = pos - getAnchoWidget(widget);
-    }
-    return pos;
+    // int anchoTotal = getAnchoWidget(g_contenedorBuffer);
+    // int pos = (int)(anchoTotal * indiceActual / buff_size);
+    // if (_cambioEtiquetaDeLado(widget, indiceActual)){
+    //     pos = pos - getAnchoWidget(widget);
+    // }
+    // return pos;
+    return indiceActual;
 }
 
 void _ActualizarBuffersGraficosAuxiliares(){
@@ -347,37 +383,62 @@ void _ActualizarBuffersGraficosAuxiliares(){
 // Llamar esta función para actualizar (1) interfaz el gráfica del buffer y (2) posición del puntero de la etiqueta LECTURA
 void ActualizarIndiceLectura(int indiceLectura){
     // Actualizar el gráfico de la Interfaz
+    printf("__a");
     float porcentaje = _calcularLlenadoBufferGraficoEnPorcentaje(indiceLectura);
+    printf("b");
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_progressBarLector1), porcentaje);
+    printf("c");
     _ActualizarBuffersGraficosAuxiliares();
+    printf("d");
 
     // Actualizar la etiqueta
     int pos = _calcularPosicionEtiquetaEnPX(g_lbl_leyendo, indiceLectura);
+    printf("e");
     gtk_widget_set_margin_start(g_lbl_leyendo, pos);
+    printf("f");
     char stringLabel[40];
+    printf("g");
     sprintf(stringLabel, _cambioEtiquetaDeLado(g_lbl_leyendo, indiceLectura) ? " Leyendo (pos: %d) ▲" : "▲ Leyendo (pos: %d)", indiceLectura);
+    printf("h");
     gtk_label_set_text(GTK_LABEL(g_lbl_leyendo), stringLabel);
+    printf("i__");
 }
 
 // Llamar esta función para actualizar (1) interfaz el gráfica del buffer y (2) posición del puntero de la etiqueta ESCRITURA
 void ActualizarIndiceEscritura(int indiceEscritura){
+    printf("a");
     // Actualizar el gráfico de la Interfaz
     float porcentaje = _calcularLlenadoBufferGraficoEnPorcentaje(indiceEscritura);
+    printf("b");
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_progressBarEscritor1), porcentaje);
+    printf("c");
     _ActualizarBuffersGraficosAuxiliares();
+    printf("d");
 
     // Actualizar la etiqueta
     int pos = _calcularPosicionEtiquetaEnPX(g_lbl_escribiendo, indiceEscritura);
+    printf("e");
     gtk_widget_set_margin_start(g_lbl_escribiendo, pos);
+    printf("f");
     char stringLabel[40];
+    printf("g");
     sprintf(stringLabel, _cambioEtiquetaDeLado(g_lbl_escribiendo, indiceEscritura) ? " Escribiendo (pos: %d) ▼" : "▼ Escribiendo (pos: %d)", indiceEscritura);
+    printf("h");
     gtk_label_set_text(GTK_LABEL(g_lbl_escribiendo), stringLabel);
+    printf("i");
 }
 
-void ActualizarIndices(int indiceEscritura, int indiceLectura){
+void ActualizarIndices(){
+    printf("00");
+    int indiceEscritura = auxptr->index_escritura;
+    int indiceLectura = auxptr->index_lectura;
+    printf("01");
     ActualizarIndiceEscritura(indiceEscritura);
+    printf("02");
     ActualizarIndiceLectura(indiceLectura);
-    RefrescarInterfaz();
+    printf("03");
+    // RefrescarInterfaz();
+    printf("04");
 }
 
 
@@ -412,13 +473,21 @@ void TestearLeerBuffer(){
     BITÁCORA
 */
 void EscribirEnBitacora(char *texto){
-    RefrescarInterfaz();
-    gint lineaSiguiente = gtk_text_buffer_get_line_count (g_buffer_bitacora)/bitacora_lineasUsadasPorEscritura - bitacora_lineasInicialesEscritas;
-    char strLineaSiguiente[6];
-    sprintf(strLineaSiguiente, "%d", lineaSiguiente);
-    gchar *textoParaEscribir = g_strjoin("", " > [", strLineaSiguiente, "]:\n   ", texto, "\n\n",  NULL);
-    gtk_text_buffer_insert_at_cursor(g_buffer_bitacora, textoParaEscribir, -1);
-    RefrescarInterfaz();
+    printf("\n 1");
+    // RefrescarInterfaz();
+    // printf("\n 2");
+    // gint lineaSiguiente = gtk_text_buffer_get_line_count (g_buffer_bitacora)/bitacora_lineasUsadasPorEscritura - bitacora_lineasInicialesEscritas;
+    // printf("\n 3");
+    // char strLineaSiguiente[6];
+    // printf("\n 4");
+    // sprintf(strLineaSiguiente, "%d", lineaSiguiente);
+    // printf("\n 5");
+    // gchar *textoParaEscribir = g_strjoin("", " > [", strLineaSiguiente, "]:\n   ", texto, "\n\n",  NULL);
+    // printf("\n 6");
+    // gtk_text_buffer_insert_at_cursor(g_buffer_bitacora, textoParaEscribir, -1);
+    // printf("\n 7");
+    // RefrescarInterfaz();
+    printf("\n 8");
 }
 
 void MensajeInicialBitacora(){
