@@ -334,38 +334,31 @@ int getAnchoWidget(GtkWidget * widget){
 */
 
 bool _cambioEtiquetaDeLado(GtkWidget * widget, int indiceActual){
+    if (indiceActual==0) return false;
+
     if ((int)(indiceActual*100/buff_size) > buffer_porcentajeParaCambiarEtiqueta){
         return true;
     }else{
         return false;
     }
 }
-
 // Calcula la cantidad de llenado del buffer, es un porcentaje del 0.0 al 1.0
 float _calcularLlenadoBufferGraficoEnPorcentaje(int indiceActual){
-    printf("\n indiceActual: %d", indiceActual);
-    printf("\n buff_size: %d", buff_size);
-    if (indiceActual==0){
-        indiceActual = 1;
-        printf("\n indiceActual modif: %d", indiceActual);
-    }else{
-        printf("\n all good");
-    }
-    int porcentaje = 100 * indiceActual / buff_size;
+    if (indiceActual==0) return 0.0;
+
+    float porcentaje = 1.0 * indiceActual / buff_size;
     
-    printf("\n porcentaje: "); 
-    PrintInt(porcentaje);
-    
-    return 0.5;
+    return porcentaje;
 }
 // Calcula la posición de las etiquetas de "Leyendo" y "Escribiendo".
 int _calcularPosicionEtiquetaEnPX(GtkWidget * widget, int indiceActual){
-    // int anchoTotal = getAnchoWidget(g_contenedorBuffer);
-    // int pos = (int)(anchoTotal * indiceActual / buff_size);
-    // if (_cambioEtiquetaDeLado(widget, indiceActual)){
-    //     pos = pos - getAnchoWidget(widget);
-    // }
-    // return pos;
+    // if (indiceActual==0) return 
+    int anchoTotal = getAnchoWidget(g_contenedorBuffer);
+    int pos = (int)(anchoTotal * indiceActual / buff_size);
+    if (_cambioEtiquetaDeLado(widget, indiceActual)){
+        pos = pos - getAnchoWidget(widget);
+    }
+    return pos;
     return indiceActual;
 }
 
@@ -378,67 +371,47 @@ void _ActualizarBuffersGraficosAuxiliares(){
         gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_progressBarLector2), porcentajeLector1);
         gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_progressBarEscritor2), 1.0);
     }
+    else if (porcentajeLector1 <= porcentajeEscritor1){
+        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_progressBarLector2), 1.0);
+    }
 }
 
 // Llamar esta función para actualizar (1) interfaz el gráfica del buffer y (2) posición del puntero de la etiqueta LECTURA
 void ActualizarIndiceLectura(int indiceLectura){
     // Actualizar el gráfico de la Interfaz
-    printf("__a");
     float porcentaje = _calcularLlenadoBufferGraficoEnPorcentaje(indiceLectura);
-    printf("b");
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_progressBarLector1), porcentaje);
-    printf("c");
     _ActualizarBuffersGraficosAuxiliares();
-    printf("d");
 
     // Actualizar la etiqueta
     int pos = _calcularPosicionEtiquetaEnPX(g_lbl_leyendo, indiceLectura);
-    printf("e");
     gtk_widget_set_margin_start(g_lbl_leyendo, pos);
-    printf("f");
     char stringLabel[40];
-    printf("g");
     sprintf(stringLabel, _cambioEtiquetaDeLado(g_lbl_leyendo, indiceLectura) ? " Leyendo (pos: %d) ▲" : "▲ Leyendo (pos: %d)", indiceLectura);
-    printf("h");
     gtk_label_set_text(GTK_LABEL(g_lbl_leyendo), stringLabel);
-    printf("i__");
 }
 
 // Llamar esta función para actualizar (1) interfaz el gráfica del buffer y (2) posición del puntero de la etiqueta ESCRITURA
 void ActualizarIndiceEscritura(int indiceEscritura){
-    printf("a");
     // Actualizar el gráfico de la Interfaz
     float porcentaje = _calcularLlenadoBufferGraficoEnPorcentaje(indiceEscritura);
-    printf("b");
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_progressBarEscritor1), porcentaje);
-    printf("c");
     _ActualizarBuffersGraficosAuxiliares();
-    printf("d");
 
     // Actualizar la etiqueta
     int pos = _calcularPosicionEtiquetaEnPX(g_lbl_escribiendo, indiceEscritura);
-    printf("e");
     gtk_widget_set_margin_start(g_lbl_escribiendo, pos);
-    printf("f");
     char stringLabel[40];
-    printf("g");
     sprintf(stringLabel, _cambioEtiquetaDeLado(g_lbl_escribiendo, indiceEscritura) ? " Escribiendo (pos: %d) ▼" : "▼ Escribiendo (pos: %d)", indiceEscritura);
-    printf("h");
     gtk_label_set_text(GTK_LABEL(g_lbl_escribiendo), stringLabel);
-    printf("i");
 }
 
 void ActualizarIndices(){
-    printf("00");
     int indiceEscritura = auxptr->index_escritura;
     int indiceLectura = auxptr->index_lectura;
-    printf("01");
     ActualizarIndiceEscritura(indiceEscritura);
-    printf("02");
     ActualizarIndiceLectura(indiceLectura);
-    printf("03");
-    // RefrescarInterfaz();
-    printf("04");
+    RefrescarInterfaz();
 }
 
 
