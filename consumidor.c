@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 {
     pid = getpid();
     char nombreBuffer[NAMEMAX] = "nombreBuffer";
-    int media = 3;
+    int media = 15;
 
     int paramIndex = 1;
     int bufferSize = 10;
@@ -253,7 +253,7 @@ int main(int argc, char **argv)
             kill(pidCreator, SIGUSR1);
 
             //Avisa al finalizador
-            sem_post(&auxptr->SEM_FINALIZADOR);
+            if (llave == 5) sem_post(&auxptr->SEM_FINALIZADOR);
 
 
             return 0;

@@ -73,7 +73,7 @@ int main(int argc, char **argv)
 {
   pid = getpid();
   char nombreBuffer[NAMEMAX] = "nombreBuffer";
-  int media = 3;
+  int media = 15;
 
   int paramIndex = 1;
   int bufferSize = 10;

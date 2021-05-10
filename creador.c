@@ -74,64 +74,42 @@ struct auxiliar_t* auxptr;
 void sig_handler(int signum){
     printf("\n sig_handler \n "); 
     if(signum == SIGUSR1){
-        printf("\n\t> Línea %d \n ",  __LINE__); 
         printf("Recibí la señal de creacion de consumidor. Ahora hay: %d vivos\n",auxptr->CONSUMIDORES );
-        printf("\n\t> Línea %d \n ",  __LINE__); 
         if (USAR_INTERFAZ) RenderizarCantidadConsumidoresActivos(auxptr->CONSUMIDORES);
-        printf("\n\t> Línea %d \n ",  __LINE__); 
         printf("LOG: %s\n", auxptr->mensaje_log);
-        printf("\n\t> Línea %d \n ",  __LINE__); 
         if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
-        printf("\n\t> Línea %d \n ",  __LINE__); 
         sem_post(&auxptr->SEM_BITACORA);
-        printf("\n\t> Línea %d \n ",  __LINE__); 
     }
 }
 
 void sig_handler_P(int signum){
     printf("\n sig_handler_P \n "); 
     if(signum == SIGUSR2){
-        printf("\n\t> Línea %d \n ",  __LINE__); 
         printf("Recibí la señal de creacion de productor. Ahora hay: %d vivos\n",auxptr->PRODUCTORES);
-        printf("\n\t> Línea %d \n ",  __LINE__); 
         if (USAR_INTERFAZ) RenderizarCantidadProductoresActivos(auxptr->PRODUCTORES);
-        printf("\n\t> Línea %d \n ",  __LINE__); 
         printf("LOG: %s\n", auxptr->mensaje_log);
-        printf("\n\t> Línea %d \n ",  __LINE__); 
         if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
-        printf("\n\t> Línea %d \n ",  __LINE__); 
         sem_post(&auxptr->SEM_BITACORA);
-        printf("\n\t> Línea %d \n ",  __LINE__); 
     }
 }
 
 void sig_handlerLog(int signum){
     printf("\n sig_handlerLog \n "); 
 
-    printf("\n\t> Línea %d \n ",  __LINE__); 
     printf("LOG: %s\n", auxptr->mensaje_log);
-    printf("\n\t> Línea %d \n ",  __LINE__); 
     if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
-    printf("\n\t> Línea %d \n ",  __LINE__); 
     sem_post(&auxptr->SEM_BITACORA);
-    printf("\n\t> Línea %d \n ",  __LINE__); 
 }
 
 
 void sig_handlerBuff(int signum){
     printf("\n sig_handlerBuff \n");
     if(signum == SIGCHLD){
-        printf("\n\t> Línea %d \n ",  __LINE__); 
         printf("Buffer leido: INDEX_LECTURA: %d, INDEX_ESCRITURA: %d",auxptr->index_lectura, auxptr->index_escritura );
-        printf("\n\t> Línea %d \n ",  __LINE__); 
         if (USAR_INTERFAZ) ActualizarIndices();
-        printf("\n\t> Línea %d \n ",  __LINE__); 
         printf("LOG: %s\n", auxptr->mensaje_log);
-        printf("\n\t> Línea %d \n ",  __LINE__); 
         if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
-        printf("\n\t> Línea %d \n ",  __LINE__); 
         sem_post(&auxptr->SEM_BITACORA);
-        printf("\n\t> Línea %d \n ",  __LINE__); 
     }
 }
 
@@ -149,14 +127,7 @@ void Algoritmo(){
     signal(SIGCHLD, sig_handlerBuff);
 
 
-    struct buffer_t{
-         char b[buff_size][ENTRYMAX];
-    };
-
-    struct buffer_t buffer;
-
     char (*bufptr)[ENTRYMAX];
-
 
     //DECLARA MEMORIA COMPARTIDA
     int len = sizeof(struct auxiliar_t);
@@ -170,11 +141,11 @@ void Algoritmo(){
     	printf("Error de ftruncate\n");
         exit(1);
     }
-    printf("Largo: %d\n", len);
     auxptr = mmap(0,len, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+    
     bufptr = mmap(0,ENTRYMAX*buff_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd2,0);
 
-    if(auxptr == MAP_FAILED){
+    if(auxptr == MAP_FAILED || bufptr == MAP_FAILED ){
     	printf("Error al crear la memoria compartida (mmap)\n");
         exit(1);
     }
@@ -199,10 +170,7 @@ void Algoritmo(){
     auxptr->flag_productor = 1;
 
 
-    //printf("Largo: %ld\n", sizeof(bufptr));
-    printf("Memoria compartida creada correctamente\n");
     //Ciclo infinito para mantenerlo vivo
-
     if (!USAR_INTERFAZ){
         for(int i=1;;i++){
         sleep(1);
@@ -212,7 +180,6 @@ void Algoritmo(){
 
 
 int main(int argc, char** argv){
-    printf("\n\t> Línea %d \n ",  __LINE__);
     // Lee los parámetros y guarda en variables globales
     while(paramIndex < argc)
     {
@@ -237,7 +204,6 @@ int main(int argc, char** argv){
     	    }
     	}
     }
-    printf("\n\t> Línea %d \n ",  __LINE__);
 
     // La Interfaz tiene un botón para llamar a la función Algoritmo()
     USAR_INTERFAZ ? IniciarInterfaz(argc, argv) : Algoritmo();
@@ -445,22 +411,35 @@ void TestearLeerBuffer(){
 /*
     BITÁCORA
 */
-void EscribirEnBitacora(char *texto){
-    printf("\n 1");
+// struct DispatchData {
+//     GtkTextBuffer *buffer;
+//     char *output_str;
+// };
+// static gboolean display_status_textbuffer(char * texto)
+// {
+//     gtk_text_buffer_insert_at_cursor(g_buffer_bitacora, texto, -1);
+//     // g_free(data);
+//     return G_SOURCE_REMOVE;
+// }
+
+void EscribirEnBitacora(char *texto)
+{
+    printf("\n BITÁCORA: %s \n", texto );
     // RefrescarInterfaz();
-    // printf("\n 2");
     // gint lineaSiguiente = gtk_text_buffer_get_line_count (g_buffer_bitacora)/bitacora_lineasUsadasPorEscritura - bitacora_lineasInicialesEscritas;
-    // printf("\n 3");
     // char strLineaSiguiente[6];
-    // printf("\n 4");
     // sprintf(strLineaSiguiente, "%d", lineaSiguiente);
-    // printf("\n 5");
     // gchar *textoParaEscribir = g_strjoin("", " > [", strLineaSiguiente, "]:\n   ", texto, "\n\n",  NULL);
-    // printf("\n 6");
     // gtk_text_buffer_insert_at_cursor(g_buffer_bitacora, textoParaEscribir, -1);
-    // printf("\n 7");
+    // struct DispatchData *data = g_new0(struct DispatchData, 1);
+    // data->output_str = g_strdup_printf("%s", texto);
+    // data->buffer = g_buffer_bitacora;
+    
+    // gdk_threads_add_idle( (GSourceFunc)display_status_textbuffer, texto );
+    
     // RefrescarInterfaz();
-    printf("\n 8");
+    
+    // RefrescarInterfaz();
 }
 
 void MensajeInicialBitacora(){
@@ -522,8 +501,8 @@ void DefinirNombreBuffer(){
 void RefrescarInterfaz(){
     // while (gtk_events_pending ())
     // g_main_context_pending(NULL) and g_main_context_iteration(NULL,FALSE)
-    while ( g_main_context_pending(NULL) )
-        gtk_main_iteration ();
+    while ( gtk_events_pending() && g_main_context_pending(NULL) && g_main_context_iteration(NULL,FALSE))
+        gtk_main_iteration();
 }
 
 // Creación de la interfaz
