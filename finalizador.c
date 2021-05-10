@@ -226,14 +226,30 @@ int main(int argc, char **argv)
     strcpy(&auxptr->mensaje_log[0], msgBitacora);
     kill(pidCreator, SIGVTALRM);
 
-    munmap(bufptr, ENTRYMAX * bufferSize);
+    
     sem_post(&auxptr->SEM_LLENO);
+    
+    //Destruye semáforos
+    sem_destroy(&auxptr->SEM_CONSUMIDORES);
+    sem_destroy(&auxptr->SEM_PRODUCTORES);
+    sem_destroy(&auxptr->SEM_FINALIZADOR);
+    sem_destroy(&auxptr->SEM_LLENO);
+    sem_destroy(&auxptr->SEM_VACIO);
+    sem_destroy(&auxptr->SEM_BUFFER);
+    sem_destroy(&auxptr->SEM_BITACORA);
+    
+    //Libera mmaps
+    munmap(bufptr, ENTRYMAX * bufferSize);
+    munmap(auxptr, sizeof(struct auxiliar_t));
+    
+    //Libera file descriptors
+    shm_unlink(AUX);
+    shm_unlink(nombreBuffer);
+    
 
-    printf("No tiró error %d\n", auxptr->CONSUMIDORES);
+    printf("Finalizó\n");
 
 
     return 0;
-
-//productor(nombreBuffer,media);
 
 }
