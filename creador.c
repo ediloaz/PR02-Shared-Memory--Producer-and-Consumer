@@ -72,38 +72,34 @@ struct auxiliar_t{
 struct auxiliar_t* auxptr;
 
 void sig_handler(int signum){
-    printf("\n sig_handler \n "); 
     if(signum == SIGUSR1){
         printf("Recibí la señal de creacion de consumidor. Ahora hay: %d vivos\n",auxptr->CONSUMIDORES );
         if (USAR_INTERFAZ) RenderizarCantidadConsumidoresActivos(auxptr->CONSUMIDORES);
         printf("LOG: %s\n", auxptr->mensaje_log);
-        if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
+        // if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
         sem_post(&auxptr->SEM_BITACORA);
     }
 }
 
 void sig_handler_P(int signum){
-    printf("\n sig_handler_P \n "); 
     if(signum == SIGUSR2){
         printf("Recibí la señal de creacion de productor. Ahora hay: %d vivos\n",auxptr->PRODUCTORES);
         if (USAR_INTERFAZ) RenderizarCantidadProductoresActivos(auxptr->PRODUCTORES);
         printf("LOG: %s\n", auxptr->mensaje_log);
-        if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
+        // if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
         sem_post(&auxptr->SEM_BITACORA);
     }
 }
 
 void sig_handlerLog(int signum){
-    printf("\n sig_handlerLog \n "); 
 
     printf("LOG: %s\n", auxptr->mensaje_log);
-    if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
+    // if (USAR_INTERFAZ) EscribirEnBitacora(auxptr->mensaje_log);
     sem_post(&auxptr->SEM_BITACORA);
 }
 
 
 void sig_handlerBuff(int signum){
-    printf("\n sig_handlerBuff \n");
     if(signum == SIGCHLD){
         printf("Buffer leido: INDEX_LECTURA: %d, INDEX_ESCRITURA: %d",auxptr->index_lectura, auxptr->index_escritura );
         if (USAR_INTERFAZ) ActualizarIndices();
@@ -302,7 +298,7 @@ int getAnchoWidget(GtkWidget * widget){
 bool _cambioEtiquetaDeLado(GtkWidget * widget, int indiceActual){
     if (indiceActual==0) return false;
 
-    if ((int)(indiceActual*100/buff_size) > buffer_porcentajeParaCambiarEtiqueta){
+    if ((int)(indiceActual*100/(buff_size-1)) > buffer_porcentajeParaCambiarEtiqueta){
         return true;
     }else{
         return false;
@@ -312,7 +308,7 @@ bool _cambioEtiquetaDeLado(GtkWidget * widget, int indiceActual){
 float _calcularLlenadoBufferGraficoEnPorcentaje(int indiceActual){
     if (indiceActual==0) return 0.0;
 
-    float porcentaje = 1.0 * indiceActual / buff_size;
+    float porcentaje = 1.0 * indiceActual / (buff_size-1);
     
     return porcentaje;
 }
@@ -320,7 +316,7 @@ float _calcularLlenadoBufferGraficoEnPorcentaje(int indiceActual){
 int _calcularPosicionEtiquetaEnPX(GtkWidget * widget, int indiceActual){
     // if (indiceActual==0) return 
     int anchoTotal = getAnchoWidget(g_contenedorBuffer);
-    int pos = (int)(anchoTotal * indiceActual / buff_size);
+    int pos = (int)(anchoTotal * indiceActual / (buff_size-1));
     if (_cambioEtiquetaDeLado(widget, indiceActual)){
         pos = pos - getAnchoWidget(widget);
     }
@@ -377,7 +373,7 @@ void ActualizarIndices(){
     int indiceLectura = auxptr->index_lectura;
     ActualizarIndiceEscritura(indiceEscritura);
     ActualizarIndiceLectura(indiceLectura);
-    RefrescarInterfaz();
+    // RefrescarInterfaz();
 }
 
 
@@ -424,7 +420,7 @@ void TestearLeerBuffer(){
 
 void EscribirEnBitacora(char *texto)
 {
-    printf("\n BITÁCORA: %s \n", texto );
+    // printf("\n BITÁCORA: %s \n", texto );
     // RefrescarInterfaz();
     // gint lineaSiguiente = gtk_text_buffer_get_line_count (g_buffer_bitacora)/bitacora_lineasUsadasPorEscritura - bitacora_lineasInicialesEscritas;
     // char strLineaSiguiente[6];
@@ -501,8 +497,8 @@ void DefinirNombreBuffer(){
 void RefrescarInterfaz(){
     // while (gtk_events_pending ())
     // g_main_context_pending(NULL) and g_main_context_iteration(NULL,FALSE)
-    while ( gtk_events_pending() && g_main_context_pending(NULL) && g_main_context_iteration(NULL,FALSE))
-        gtk_main_iteration();
+     while ( g_main_context_pending(NULL) )
+        gtk_main_iteration ();
 }
 
 // Creación de la interfaz
